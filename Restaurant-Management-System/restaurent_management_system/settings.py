@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-#79q8so%=xwtb7%rom@1(v71ezy^%u!dxjcy*)e#hw&sbz=e3+'
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = 'django-insecure-#79q8so%=xwtb7%rom@1(v71ezy^%u!dxjcy*)e#hw&sbz=e3+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -92,10 +92,19 @@ WSGI_APPLICATION = 'restaurent_management_system.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'restaurant_db',
+        'USERNAME':"root",
+        "PASSWORD":"root",
+        
     }
 }
 
@@ -171,6 +180,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://127.0.0.1:3000",
+    "http://localhost:5173",
+    "https://127.0.0.1:5173",
 ]
