@@ -124,7 +124,7 @@ class MenuAPIView(APIView):
     def get(self, request):
         menus = Menu.objects.all()
         serializer = MenuSerializer(menus, many=True)
-        return Response(serializer.data)
+        return Response({"message":"All Menus Data","data":serializer.data},status=status.HTTP_200_OK)
     
     def post(self,request):
         serializer=MenuSerializer(data=request.data)

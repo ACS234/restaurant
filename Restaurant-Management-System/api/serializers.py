@@ -15,10 +15,11 @@ class FoodSerializer(serializers.ModelSerializer):
         
 class MenuSerializer(serializers.ModelSerializer):
     # foods = serializers.PrimaryKeyRelatedField(queryset=Food.objects.all(), many=True)
-    foods = FoodSerializer(many=True, read_only=True)
+    # foods = FoodSerializer(many=True, read_only=True)
     class Meta:
         model = Menu
-        fields = '__all__'
+        fields = ['id','name','category','description','image','is_active']
+        # exclude=['foods',]
 
 class OrderItemSerializer(serializers.ModelSerializer):
     foods = FoodSerializer(many=True, read_only=True)

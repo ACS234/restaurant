@@ -69,12 +69,11 @@ const FoodDetail = () => {
           </div>
         </div>
         <div className="mt-6">
-          <a
-            href="#order"
+          <button
             className="inline-block px-8 py-3 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
           >
             Order Now
-          </a>
+          </button>
         </div>
       </div>
     </section>
