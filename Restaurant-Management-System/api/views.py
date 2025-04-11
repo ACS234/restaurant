@@ -4,6 +4,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from django.shortcuts import get_object_or_404, render
 from django.http import FileResponse
@@ -117,6 +118,24 @@ class FoodAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class FoodDetailAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            foods=Food.objects.get(pk=pk)
+            serializer = FoodSerializer(foods)
+            return Response(serializer.data)
+        except ObjectDoesNotExist:
+            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        food = get_object_or_404(Food, pk=pk)
+        serializer = FoodSerializer(food, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 # Menu API
@@ -136,9 +155,13 @@ class MenuAPIView(APIView):
 
 class MenuDetailAPIView(APIView):
     def get(self, request, pk):
-        menu = get_object_or_404(Menu, pk=pk)
-        serializer = MenuSerializer(menu)
-        return Response(serializer.data)
+        # menu = get_object_or_404(Menu, pk=pk)
+        try:
+            menu=Menu.objects.prefetch_related('foods').get(pk=pk)
+            serializer = MenuSerializer(menu)
+            return Response({"data":serializer.data},status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, pk):
         menu = get_object_or_404(Menu, pk=pk)

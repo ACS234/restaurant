@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    RestaurantAPIView, RestaurantQRAPIView, FoodAPIView, OrderAPIView, 
+    RestaurantAPIView, RestaurantQRAPIView, FoodAPIView,FoodDetailAPIView, OrderAPIView, 
     OrderItemAPIView, OrderStatusAPIView, PaymentAPIView, GenerateReceiptAPIView,
     ReviewAPIView, InventoryAPIView,MenuAPIView,MenuDetailAPIView,OrderDetailAPIView
 )
@@ -9,6 +9,7 @@ urlpatterns = [
     path('restaurants/', RestaurantAPIView.as_view(), name='restaurant_list'),
     path('restaurants/<int:pk>/qr/', RestaurantQRAPIView.as_view(), name='restaurant_qr'),
     path('foods/', FoodAPIView.as_view(), name='food_list'),
+    path('foods/<int:pk>/', FoodDetailAPIView.as_view(), name='food_detail'),
     path('orders/', OrderAPIView.as_view(), name='order_list'),
     path('orders/<int:pk>/', OrderDetailAPIView.as_view(), name='order_detail'),
     path('menus/', MenuAPIView.as_view(), name='menu_list'),

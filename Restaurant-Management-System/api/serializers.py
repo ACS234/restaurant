@@ -8,17 +8,25 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
 
 class FoodSerializer(serializers.ModelSerializer):
+    # menu=MenuSerializer(many=true)
+    # menu = serializers.StringRelatedField(many=True)
+    # menu=serializers.SerializerMethodField()
+    menu = 'MenuSerializer'
     class Meta:
         model = Food
-        # fields = '__all__'
-        exclude = ['menu']
+        fields = '__all__'
+        # exclude = ['menu']
+
+    def get_menu(self, obj):
+        return MenuSerializer(obj.menu_set.all(), many=True).data
+
         
 class MenuSerializer(serializers.ModelSerializer):
     # foods = serializers.PrimaryKeyRelatedField(queryset=Food.objects.all(), many=True)
-    # foods = FoodSerializer(many=True, read_only=True)
+    foods = FoodSerializer(many=True, read_only=True)
     class Meta:
         model = Menu
-        fields = ['id','name','category','description','image','is_active']
+        fields = ['id','name','foods','category','description','image','is_active']
         # exclude=['foods',]
 
 class OrderItemSerializer(serializers.ModelSerializer):
