@@ -41,7 +41,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-6 ml-4">
-          <Link to="#cart" className="relative hover:text-yellow-500">
+          <Link to="/cart" className="relative hover:text-yellow-500">
             <span className="absolute -top-2 -right-3 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
               5
             </span>

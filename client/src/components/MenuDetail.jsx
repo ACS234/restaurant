@@ -1,60 +1,85 @@
-import React from 'react';
-import img2 from '../assets/img_5.jpg';
+import React, { useEffect, useState } from 'react';
+import { getMenuDetail } from '../services/apiService';
+import { toast } from 'react-toastify';
+import { useParams, Link } from 'react-router-dom';
+import { IoIosStarHalf } from "react-icons/io";
 
 const MenuDetail = () => {
-  // Hardcoded menu data for a specific item (e.g., Pasta Carbonara)
-  const menuItem = {
-    title: 'Pasta Carbonara',
-    description: 'A creamy pasta with bacon, eggs, and cheese. A classic Italian dish perfect for any pasta lover.',
-    ingredients: ['Pasta', 'Bacon', 'Eggs', 'Parmesan Cheese', 'Black Pepper'],
-    price: '$14.99',
-    prepTime: '20 minutes',
-    image: img2,
-    dietaryInfo: 'Contains dairy and gluten.',
-  };
+  const { id } = useParams()
+  const [menuItem, setMenuDetail] = useState([]);
+  const [foodItem, setFoodDetail] = useState([]);
+
+  useEffect(() => {
+    const getDetail = async (id) => {
+      try {
+        const data = await getMenuDetail(id)
+        console.log("menu detail", data);
+        console.log("menu food detail", data.foods);
+        setMenuDetail(data)
+        setFoodDetail(data.foods)
+      } catch (error) {
+        toast.error("something went wrong", error)
+      }
+    }
+    if (id)
+      getDetail(id)
+  }, [id])
 
   return (
     <section className="py-16 px-4 bg-gray-100 text-center">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold mb-6">{menuItem.title}</h2>
+        <h2 className="text-4xl text-justify font-bold mb-6">{menuItem.name}</h2>
         <img
-          src={menuItem.image}
+          src={`http://localhost:8000/${menuItem.image}`}
           alt={menuItem.title}
-          className="w-full h-80 object-cover rounded-lg mb-6"
+          className="w-full h-100 object-cover rounded-lg mb-6 -z-10"
         />
-        <p className="text-lg text-gray-700 mb-4">{menuItem.description}</p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="font-semibold text-2xl">Ingredients</h3>
-            <ul className="list-disc ml-6 mt-2">
-              {menuItem.ingredients.map((ingredient, index) => (
-                <li key={index} className="text-gray-600">{ingredient}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="font-semibold text-2xl">Details</h3>
-            <p className="text-lg mt-2">
-              <strong>Price:</strong> {menuItem.price}
-            </p>
-            <p className="text-lg mt-2">
-              <strong>Preparation Time:</strong> {menuItem.prepTime}
-            </p>
-            <p className="text-lg mt-2">
-              <strong>Dietary Information:</strong> {menuItem.dietaryInfo}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <a
-            href="#order"
-            className="inline-block px-8 py-3 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
-          >
-            Order Now
-          </a>
+        <p className="text-xl text-justify font-semibold text-gray-900 mb-4">{menuItem.description}</p>
+        <hr class="w-full mx-auto my-2 border-t-2 border-green-500-500" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 py-8 m-2.5">
+          {foodItem.map((item) => (
+            <div key={item.id} className="bg-white w-full p-4 rounded-lg shadow-lg">
+              <img
+                src={`http://localhost:8000/${item.image}`}
+                alt={menuItem.title}
+                className="w-full h-40 object-cover rounded-lg mb-6"
+              />
+              <p className="text-sm text-justify mt-0">
+                <strong>Name:</strong> {(item.name).substring(0,30)}...
+              </p>
+              <p className="text-sm text-justify mt-0">
+                <strong>Cuisine Type:</strong> {item.cuisine_type}
+              </p>
+              <p className="text-sm text-justify mt-0">
+                <strong>Category:</strong> {item.category}
+              </p>
+              <p className="text-sm text-justify mt-0">
+                <strong>Type:</strong>{' '}
+                <span
+                  className={`inline-block w-3 h-3 rounded-full mr-1 ${item.is_vegetarian ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                ></span>
+                {item.is_vegetarian ? 'Vegetarian' : 'Non-Vegetarian'}
+              </p>
+              <p className="flex items-center text-sm mt-1 space-x-1">
+                <strong>Rating:</strong>
+                <span>{item.rating}</span>
+                <IoIosStarHalf className="text-green-500" />
+              </p>
+              <div className="flex mt-6 space-x-20">
+                <Link to="#order"
+                  className="inline-block px-2 py-2 bg-green-500 text-white font-light rounded-lg hover:bg-green-600"
+                >
+                  Add Cart
+                </Link>
+                <Link to="#order"
+                  className="inline-block px-2 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
+                >
+                  Order Now
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

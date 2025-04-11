@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { getMenus } from '../services/apiService'
-import {Link,useNavigate, useParams } from 'react-router-dom'
+import {Link,useNavigate} from 'react-router-dom'
 
 const MenuSection = () => {
-  const { id } =useParams()
   const [menus, setMenus] = useState([])
 
 
@@ -14,7 +13,7 @@ const MenuSection = () => {
     const getData = async () => {
       try {
         const data = await getMenus();
-        console.log('Fetched food data:', data);
+        // console.log('Fetched food data:', data);
         setMenus(data);
       } catch (error) {
         toast.error('Failed to load foods.', error.message);
@@ -25,13 +24,18 @@ const MenuSection = () => {
 
   // if(loading) return <p>loading data...</p>
 
-  const menuDetail=(id)=>{
-    navigate(`/menudetail/${id}`)
-  }
+  const menuDetail = (id) => {
+    if (!id) {
+      toast.error("Invalid ID passed to menuDetail:", id);
+      return;
+    }
+    navigate(`/menu-detail/${id}`);
+  };
 
   return (
     <section className="py-16 px-4 bg-gray-100 text-center">
       <h2 className="text-3xl font-bold mb-6">Our Menu</h2>
+      <hr class="w-1/2 mx-auto my-10 border-t-4 border-dashed border-blue-500" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {menus.map((menu) => (
           <div key={menu.id} className="h-1/4">
@@ -45,7 +49,7 @@ const MenuSection = () => {
               <p className="mt-2">{(menu.description).substring(0, 35)}.</p>
               <div className="flex mt-4 space-x-4">
               <button
-                onClick={menuDetail(id)}
+                onClick={() => menuDetail(menu.id)}
                 className="inline-block px-8 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-900"
               >
                 See Menu

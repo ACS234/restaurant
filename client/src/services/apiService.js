@@ -39,6 +39,15 @@ export const getMenus = async () => {
     }
 }
 
+export const getMenuDetail=async(id)=>{
+    try {
+        const response =await getData(`${apiUrl}/api/menus/${id}/`);
+        return response?.data;
+    } catch (error) {
+        toast.error("Something Went Wrong",error);
+        throw error
+    }
+}
 
 
 // For Posting Data Function

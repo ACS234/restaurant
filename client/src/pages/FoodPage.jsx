@@ -32,8 +32,8 @@ const FoodPage = () => {
             <ToastContainer/>
             <section className="py-16 px-4 text-justify">
                 <div className="max-w-7xl mx-auto">
-                    <h2 className="text-4xl font-bold mb-6">Our Menu</h2>
-
+                    <h2 className="text-4xl font-bold mb-2">Our Menu</h2>
+                    <hr class="my-8 border-t-2 border-gray-300" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {foods.map((menuItem) => (
                             <div key={menuItem.id} className="bg-white p-6 rounded-lg shadow-lg">
