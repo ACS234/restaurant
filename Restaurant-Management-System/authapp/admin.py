@@ -4,4 +4,4 @@ from .models import *
 # Register your models here.
 admin.site.site_header = "Restaurant Management System Admin"
 
-# admin.site.register(User)
+admin.site.register(User)

@@ -7,13 +7,18 @@ from rest_framework.authtoken.models import Token
 
 # Create your models here.
 
-# class User(AbstractUser):
-#     email = models.EmailField(unique=True)
-#     USERNAME_FIELD = 'email'
-#     REQUIRED_FIELDS = ['username']
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
-#     def __str__(self):
-#         return self.email
+class User(AbstractUser):
+    username = models.CharField(max_length=200, null=True, blank=True, unique=True)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
+
+
+    def __str__(self):
+        return f"{self.username} - {self.email}"
+
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

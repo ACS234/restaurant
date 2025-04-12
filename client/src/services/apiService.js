@@ -50,6 +50,7 @@ export const getMenuDetail=async(id)=>{
 }
 
 
+
 // For Posting Data Function
 const postData = async (url, data) => {
     try {
@@ -88,3 +89,14 @@ export const Login = async (data) => {
 }
 
 
+// For Cart Function
+
+export const addCart=async(data)=>{
+    try {
+        const response= await postData(`${apiUrl}/api/cart/add/`,data);
+        return response;
+    } catch (error) {
+        console.error('Error',error);
+        toast.error("Invalid credentials!");
+    }
+}

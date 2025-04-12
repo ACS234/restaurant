@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Restaurant,  Food,Menu, OrderItem, Order, Receipt, Payment,Review
+from .models import *
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,8 +26,14 @@ class MenuSerializer(serializers.ModelSerializer):
     foods = FoodSerializer(many=True, read_only=True)
     class Meta:
         model = Menu
-        fields = ['id','name','foods','category','description','image','is_active']
+        fields = ['id','name',"restaurant",'foods','category','description','image','is_active']
         # exclude=['foods',]
+
+class ReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Reservation
+        fields='__all__'
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     foods = FoodSerializer(many=True, read_only=True)
@@ -42,6 +48,13 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ['id', 'user', 'food', 'quantity']
+
 
 class ReceiptSerializer(serializers.ModelSerializer):
     class Meta:

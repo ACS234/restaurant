@@ -2,9 +2,11 @@ import qrcode
 import stripe
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import permissions
 from rest_framework import status
 from django.shortcuts import get_object_or_404, render
 from django.http import FileResponse
@@ -69,12 +71,28 @@ class RestaurantAPIView(APIView):
 
         # Return the response with the restaurant data and QR code URL
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
 
 
 class RestaurantQRAPIView(APIView):
     def get(self, request, pk):
         restaurant = get_object_or_404(Restaurant, pk=pk)
         return FileResponse(open(restaurant.qr_code.path, "rb"), content_type="image/png")
+    
+class GenerateQRCodeAPIView(APIView):
+    def get(self, request, restaurant_id, table_id):
+        # Get the table instance based on the provided restaurant_id and table_id
+        table = Table.objects.get(id=table_id, restaurant_id=restaurant_id)
+        qr_url = table.get_qr_code_url()
+
+        # Generate the QR code
+        qr_code = qrcode.make(qr_url)
+
+        # Create an HTTP response and return the QR code image
+        response = HttpResponse(content_type="image/png")
+        qr_code.save(response, "PNG")
+        return response
 
 #  Food API
 class FoodAPIView(APIView):
@@ -151,7 +169,21 @@ class MenuAPIView(APIView):
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
+
+# for qr code
+class MenusAPIView(APIView):
+    def get(self, request, restaurant_id, table_id):
+        # Fetch the restaurant and table to check if they exist
+        restaurant = Restaurant.objects.get(id=restaurant_id)
+        table = Table.objects.get(id=table_id, restaurant=restaurant)
+
+        # Fetch the menu items for that restaurant
+        menu_items = restaurant.menus.all()
+
+        # Serialize the menu items
+        serializer = MenuSerializer(menu_items, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MenuDetailAPIView(APIView):
     def get(self, request, pk):
@@ -175,6 +207,52 @@ class MenuDetailAPIView(APIView):
     #     menu = get_object_or_404(Menu, pk=pk)
     #     menu.delete()
     #     return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CartItemCreateView(APIView):
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = CartItemSerializer(data=request.data)
+        if serializer.is_valid():
+            # Check if this food item is already in the cart
+            existing_item = CartItem.objects.filter(user=request.user, food=serializer.validated_data['food']).first()
+            if existing_item:
+                # Update quantity if it already exists
+                existing_item.quantity += serializer.validated_data.get('quantity', 1)
+                existing_item.save()
+                return Response(CartItemSerializer(existing_item).data, status=status.HTTP_200_OK)
+            else:
+                # Create new cart item
+                serializer.save(user=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReservationAPIView(APIView):
+    def post(self, request):
+        serializer = ReservationSerializer(data=request.data)
+        if serializer.is_valid():
+            table = serializer.validated_data['table']
+            date = serializer.validated_data['reservation_date']
+            time = serializer.validated_data['reservation_time']
+
+            # Check if the table is already booked at this date and time
+            is_booked = Reservation.objects.filter(
+                table=table,
+                reservation_date=date,
+                reservation_time=time
+            ).exists()
+
+            if is_booked:
+                return Response(
+                    {'error': 'This table is already booked at the selected date and time.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            serializer.save()
+            return Response({'message': 'Booking submitted!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Order API
 class OrderAPIView(APIView):

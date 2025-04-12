@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.conf import settings
 import qrcode
 from io import BytesIO
 from django.utils import timezone
@@ -15,7 +16,7 @@ class Restaurant(models.Model):
 
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 
@@ -40,12 +41,48 @@ class Food(models.Model):
     image = models.ImageField(upload_to="food_images/", null=True, blank=True)
     price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0)],null=True, blank=True)
     stock_quantity = models.PositiveIntegerField(default=0)
-    cuisine_type=models.CharField(max_length=20,null=True,blank=True)
+    cuisine_type=models.CharField(max_length=150,null=True,blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0, validators=[MinValueValidator(0)])
     
     def __str__(self):
         menu_names = ", ".join([menu.name for menu in self.menu.all()])
         return f"{self.name} ({menu_names})"
+    
+class CartItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart_items')
+    food = models.ForeignKey(Food, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'food')
+
+    def __str__(self):
+        return f"{self.quantity} x {self.food.name}"
+    
+class Table(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='tables')
+    table_number = models.CharField(max_length=10)
+    seats = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"Table {self.table_number} - {self.restaurant.name}"
+    
+    def get_qr_code_url(self):
+        # Create URL containing restaurant and table IDs
+        return f"http://localhost:8000/order/{self.restaurant.id}/{self.id}/"
+
+
+class Reservation(models.Model):
+    table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='reservations')
+    customer_name = models.CharField(max_length=100)
+    customer_email = models.EmailField()
+    reservation_date = models.DateField()
+    reservation_time = models.TimeField()
+    number_of_people = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"Reservation for {self.customer_name} on {self.reservation_date} at {self.table}"
 
 class Order(models.Model):
     STATUS_CHOICES = [

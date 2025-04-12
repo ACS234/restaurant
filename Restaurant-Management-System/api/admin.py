@@ -10,4 +10,5 @@ admin.site.register(Payment)
 admin.site.register(OrderItem)
 admin.site.register(Review)
 admin.site.register(Receipt)
-
+admin.site.register(Table)
+admin.site.register(Reservation)

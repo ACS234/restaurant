@@ -1,0 +1,371 @@
+
+ 
+  
+  
+  [
+    {
+      "menu": [8],
+      "name": "Classic Caesar Salad",
+      "description": "Fresh romaine lettuce with creamy Caesar dressing, croutons, and Parmesan.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Croutons, Parmesan cheese",
+      "category": "Salad",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 120,
+      "stock_quantity": 49,
+      "rating": 4.6
+    },
+    {
+      "menu": [8],
+      "name": "Chicken Caesar Salad",
+      "description": "Classic Caesar salad topped with grilled chicken breast.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Grilled chicken, Croutons, Parmesan cheese",
+      "category": "Salad",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 160,
+      "stock_quantity": 48,
+      "rating": 4.7
+    },
+    {
+      "menu": [8],
+      "name": "Vegan Caesar Salad",
+      "description": "A vegan twist with plant-based dressing and no dairy.",
+      "ingredients": "Romaine lettuce, Vegan Caesar dressing, Croutons, Nutritional yeast",
+      "category": "Vegan",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 140,
+      "stock_quantity": 47,
+      "rating": 4.8
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Bacon",
+      "description": "Classic Caesar salad with crispy bacon pieces for extra flavor.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Bacon, Croutons, Parmesan cheese",
+      "category": "Salad",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 170,
+      "stock_quantity": 46,
+      "rating": 4.6
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Shrimp",
+      "description": "A Caesar salad topped with succulent grilled shrimp.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Grilled shrimp, Croutons, Parmesan cheese",
+      "category": "Salad",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 180,
+      "stock_quantity": 45,
+      "rating": 4.7
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Avocado",
+      "description": "Fresh Caesar salad with creamy avocado slices.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Avocado, Croutons, Parmesan cheese",
+      "category": "Healthy",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 190,
+      "stock_quantity": 44,
+      "rating": 4.8
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Grilled Tofu",
+      "description": "A plant-based Caesar salad with grilled tofu for protein.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Grilled tofu, Croutons, Nutritional yeast",
+      "category": "Vegan",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 200,
+      "stock_quantity": 43,
+      "rating": 4.6
+    },
+    {
+      "menu": [8],
+      "name": "Spicy Caesar Salad",
+      "description": "Classic Caesar salad with a spicy kick from chili flakes.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Croutons, Parmesan cheese, Chili flakes",
+      "category": "Salad",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 150,
+      "stock_quantity": 42,
+      "rating": 4.5
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Roasted Vegetables",
+      "description": "Romaine lettuce, roasted seasonal vegetables, and Caesar dressing.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Roasted vegetables, Croutons, Parmesan cheese",
+      "category": "Healthy",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 160,
+      "stock_quantity": 41,
+      "rating": 4.7
+    },
+    {
+      "menu": [8],
+      "name": "Caesar Salad with Grilled Chicken and Avocado",
+      "description": "A healthy combination of grilled chicken and creamy avocado on Caesar salad.",
+      "ingredients": "Romaine lettuce, Caesar dressing, Grilled chicken, Avocado, Croutons, Parmesan cheese",
+      "category": "Salad",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 210,
+      "stock_quantity": 40,
+      "rating": 4.8
+    }
+  ]
+  [
+    {
+      "menu": [9],
+      "name": "Classic Fish and Chips",
+      "description": "Crispy battered fish fillets served with golden fries.",
+      "ingredients": "White fish fillets, Flour, Beer batter, Potatoes, Salt",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 220,
+      "stock_quantity": 49,
+      "rating": 4.6
+    },
+    {
+      "menu": [9],
+      "name": "Fish and Chips with Mushy Peas",
+      "description": "Traditional fish and chips served with mashed peas.",
+      "ingredients": "White fish fillets, Flour, Beer batter, Potatoes, Peas",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 240,
+      "stock_quantity": 48,
+      "rating": 4.7
+    },
+    {
+      "menu": [9],
+      "name": "Grilled Fish and Chips",
+      "description": "Grilled white fish fillets served with crispy fries.",
+      "ingredients": "White fish fillets, Olive oil, Potatoes, Lemon",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 250,
+      "stock_quantity": 47,
+      "rating": 4.8
+    },
+    {
+      "menu": [9],
+      "name": "Beer Battered Fish and Chips",
+      "description": "Fish fillets coated in a beer batter, served with golden fries.",
+      "ingredients": "White fish fillets, Flour, Beer batter, Potatoes, Salt",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 230,
+      "stock_quantity": 46,
+      "rating": 4.7
+    },
+    {
+      "menu": [9],
+      "name": "Crispy Fish and Chips",
+      "description": "Lightly battered fish with a crispy crunch, served with fries.",
+      "ingredients": "White fish fillets, Flour, Cornstarch, Potatoes",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 210,
+      "stock_quantity": 45,
+      "rating": 4.6
+    },
+    {
+      "menu": [9],
+      "name": "Spicy Fish and Chips",
+      "description": "Fish fillets with a spicy batter, served with fries.",
+      "ingredients": "White fish fillets, Flour, Chili powder, Potatoes, Salt",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 240,
+      "stock_quantity": 44,
+      "rating": 4.5
+    },
+    {
+      "menu": [9],
+      "name": "Fish and Sweet Potato Fries",
+      "description": "Crispy battered fish served with healthy sweet potato fries.",
+      "ingredients": "White fish fillets, Flour, Beer batter, Sweet potatoes, Salt",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 260,
+      "stock_quantity": 43,
+      "rating": 4.8
+    },
+    {
+      "menu": [9],
+      "name": "Fish and Chips with Coleslaw",
+      "description": "Classic fish and chips paired with creamy coleslaw.",
+      "ingredients": "White fish fillets, Flour, Beer batter, Potatoes, Cabbage, Mayo",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 270,
+      "stock_quantity": 42,
+      "rating": 4.7
+    },
+    {
+      "menu": [9],
+      "name": "Lemon Herb Fish and Chips",
+      "description": "Herb-seasoned fish fillets served with crispy fries and a lemon wedge.",
+      "ingredients": "White fish fillets, Olive oil, Lemon, Potatoes, Garlic",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 250,
+      "stock_quantity": 41,
+      "rating": 4.6
+    },
+    {
+      "menu": [9],
+      "name": "Panko Crusted Fish and Chips",
+      "description": "Fish fillets coated in panko breadcrumbs, served with fries.",
+      "ingredients": "White fish fillets, Panko breadcrumbs, Potatoes, Salt",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 220,
+      "stock_quantity": 40,
+      "rating": 4.8
+    }
+  ]
+  [
+    {
+      "menu": [10],
+      "name": "Classic Spaghetti Bolognese",
+      "description": "Traditional Italian pasta with a rich, meaty Bolognese sauce.",
+      "ingredients": "Spaghetti, Ground beef, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 220,
+      "stock_quantity": 49,
+      "rating": 4.7
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Mushrooms",
+      "description": "Classic Bolognese with sautéed mushrooms mixed in.",
+      "ingredients": "Spaghetti, Ground beef, Tomato sauce, Mushrooms, Onion, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 230,
+      "stock_quantity": 48,
+      "rating": 4.8
+    },
+    {
+      "menu": [10],
+      "name": "Vegetarian Spaghetti Bolognese",
+      "description": "A plant-based version of the traditional Bolognese, using lentils and vegetables.",
+      "ingredients": "Spaghetti, Lentils, Tomato sauce, Onion, Carrot, Garlic, Parmesan (optional)",
+      "category": "Vegan",
+      "is_vegetarian": true,
+      "image": null,
+      "price": 200,
+      "stock_quantity": 47,
+      "rating": 4.6
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Chicken",
+      "description": "Spaghetti Bolognese with grilled chicken breast pieces.",
+      "ingredients": "Spaghetti, Ground beef, Chicken breast, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 240,
+      "stock_quantity": 46,
+      "rating": 4.7
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Extra Cheese",
+      "description": "A classic Bolognese topped with extra melted mozzarella and Parmesan.",
+      "ingredients": "Spaghetti, Ground beef, Tomato sauce, Onion, Mozzarella cheese, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 250,
+      "stock_quantity": 45,
+      "rating": 4.8
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Bacon",
+      "description": "A rich Bolognese sauce with crispy bacon pieces for extra flavor.",
+      "ingredients": "Spaghetti, Ground beef, Bacon, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 260,
+      "stock_quantity": 44,
+      "rating": 4.7
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Red Wine",
+      "description": "Bolognese sauce cooked with a splash of red wine for enhanced flavor.",
+      "ingredients": "Spaghetti, Ground beef, Red wine, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 270,
+      "stock_quantity": 43,
+      "rating": 4.9
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Spinach",
+      "description": "A healthy twist with fresh spinach added to the Bolognese sauce.",
+      "ingredients": "Spaghetti, Ground beef, Spinach, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 240,
+      "stock_quantity": 42,
+      "rating": 4.6
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Zucchini",
+      "description": "Bolognese sauce served with zucchini noodles for a low-carb option.",
+      "ingredients": "Zucchini noodles, Ground beef, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Healthy",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 250,
+      "stock_quantity": 41,
+      "rating": 4.8
+    },
+    {
+      "menu": [10],
+      "name": "Spaghetti Bolognese with Pesto",
+      "description": "Classic Bolognese sauce topped with a basil pesto drizzle.",
+      "ingredients": "Spaghetti, Ground beef, Pesto, Tomato sauce, Onion, Garlic, Parmesan cheese",
+      "category": "Main Course",
+      "is_vegetarian": false,
+      "image": null,
+      "price": 260,
+      "stock_quantity": 40,
+      "rating": 4.7
+    }
+  ]
+        

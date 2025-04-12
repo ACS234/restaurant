@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const BookingSection = () => {
   const [name, setName] = useState('');
@@ -6,10 +7,29 @@ const BookingSection = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [people, setPeople] = useState('');
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Booking submitted!');
+
+    try {
+      const response = await axios.post('http://localhost:8000/reservations/book/', {
+        customer_name: name,
+        customer_email: email,
+        reservation_date: date,
+        reservation_time: time,
+        number_of_people: people,
+        table: 1 // assuming you're booking Table ID 1
+      });
+
+      setMessage(response.data.message);
+    } catch (error) {
+      if (error.response && error.response.data.error) {
+        setMessage(error.response.data.error);
+      } else {
+        setMessage('An error occurred while booking.');
+      }
+    }
   };
 
   return (
@@ -55,6 +75,8 @@ const BookingSection = () => {
           required 
         />
         <button type="submit" className="bg-white text-red-600 py-2 px-6 rounded-full hover:bg-gray-200">Book Now</button>
+
+        {message && <p className="mt-4 text-lg font-semibold">{message}</p>}
       </form>
     </section>
   );
