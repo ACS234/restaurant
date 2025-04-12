@@ -13,7 +13,6 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <img src={img} alt="Restaurant Logo" className="h-10 w-10 rounded-full" />
           <span className="ml-3 text-xl font-bold">Red Chillies</span>
         </div>
-
         {isAuthenticated && (
           <div className="hidden md:flex space-x-6">
             <Link to="/" className="hover:text-yellow-500">Home</Link>
