@@ -1,0 +1,83 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Signup } from '../../services/apiService';
+import { ACCESS_TOKEN ,REFRESH_TOKEN } from '../../constants';
+import { ToastContainer } from 'react-toastify';
+
+const Register = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.target);
+
+    try {
+      const res = await Signup(formData);
+      if (res?.access && res?.refresh) {
+        sessionStorage.setItem(ACCESS_TOKEN, res.access);
+        sessionStorage.setItem(REFRESH_TOKEN, res.refresh);
+        navigate('/');
+      } else {
+        navigate('/login');
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          Create your account
+        </h2>
+        {error && (
+          <div className="text-red-500 text-sm text-center">{error}</div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="username"
+            type="text"
+            required
+            placeholder="Username"
+            className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
+          />
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="Email"
+            className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
+          />
+          <input
+            name="password"
+            type="password"
+            required
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
+          />
+          <input
+            name="password2"
+            type="password"
+            required
+            placeholder="Confirm Password"
+            className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition"
+          />
+          <button
+            type="submit"
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            {loading ? <Loader /> : 'Register'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
