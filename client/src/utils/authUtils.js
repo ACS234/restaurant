@@ -1,36 +1,47 @@
-import {jwtDecode} from 'jwt-decode';
-import api from '../services/api'; // Your api service
+import { jwtDecode } from 'jwt-decode';
+import { tokenRefresh } from '../services/apiService';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+import axios from 'axios';
 
-// Function to decode access token and get the user ID
+// Decode token to get user_id
 export const getUserFromToken = (token) => {
   try {
     const decodedToken = jwtDecode(token);
-    return decodedToken.user_id; // Assuming the user_id is in the token payload
+    return decodedToken.user_id;
   } catch (error) {
-    console.error('Invalid or expired token',error);
+    console.error('Invalid or expired token', error);
     return null;
   }
 };
 
-// Function to refresh access token using the refresh token
+// Refresh the access token
 export const refreshAccessToken = async () => {
   try {
-    const response = await api.post('/auth/refresh/', {
-      refresh: sessionStorage.getItem(REFRESH_TOKEN),
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN);
+    if (!refreshToken) return null;
+
+    const response = await tokenRefresh('/auth/api/token/refresh/', {
+      refresh: refreshToken,
     });
-    sessionStorage.setItem(ACCESS_TOKEN, response.data.access);
-    return response.data.access;
+
+    if (response.status === 200 && response.data?.access) {
+      sessionStorage.setItem(ACCESS_TOKEN, response.data.access);
+      return response.data.access;
+    }
+
+    return null;
   } catch (error) {
     console.error('Failed to refresh access token', error);
+    sessionStorage.removeItem(ACCESS_TOKEN);
+    sessionStorage.removeItem(REFRESH_TOKEN);
     return null;
   }
 };
 
-// Function to get the current user by using the access token
+// Get current user info
 export const getUser = async (accessToken) => {
   try {
-    const response = await api.get('/account/api/user/', {
+    const response = await axios.get('/auth/api/user/', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -42,24 +53,19 @@ export const getUser = async (accessToken) => {
   }
 };
 
-// Function to get the user ID from the current access token, refreshing the token if necessary
+// Get user_id with token refresh logic
 export const getUserId = async () => {
-  const accessToken = sessionStorage.getItem(ACCESS_TOKEN);
-  if (!accessToken) {
-    throw new Error('No access token found');
-  }
+  let accessToken = sessionStorage.getItem(ACCESS_TOKEN);
+  if (!accessToken) throw new Error('No access token found');
 
   let userId = getUserFromToken(accessToken);
   if (!userId) {
-    const newAccessToken = await refreshAccessToken();
-    if (newAccessToken) {
-      userId = getUserFromToken(newAccessToken);
+    accessToken = await refreshAccessToken();
+    if (accessToken) {
+      userId = getUserFromToken(accessToken);
     }
   }
 
-  if (!userId) {
-    throw new Error('Unable to retrieve user ID from token');
-  }
-
+  if (!userId) throw new Error('Unable to retrieve user ID from token');
   return userId;
 };

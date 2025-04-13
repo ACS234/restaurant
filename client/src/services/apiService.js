@@ -49,6 +49,16 @@ export const getMenuDetail=async(id)=>{
     }
 }
 
+export const getTable=async()=>{
+    try {
+        const response=await getData(`${apiUrl}/api/get_table/`);
+        return response?.data;
+    } catch (error) {
+        toast.error('Something went wrong',error)
+        throw error
+    }
+}
+
 
 
 // For Posting Data Function
@@ -88,6 +98,17 @@ export const Login = async (data) => {
     }
 }
 
+export const tokenRefresh = async (data) => {
+    try {
+      const response = await axios.post(`${apiUrl}/auth/api/token/refresh/`, data);
+      console.log('Token refresh response:', response);
+      return response;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      toast.error("Session expired. Please log in again.");
+      return null;
+    }
+  };
 
 // For Cart Function
 
@@ -100,3 +121,14 @@ export const addCart=async(data)=>{
         toast.error("Invalid credentials!");
     }
 }
+
+export const bookTable=async(data)=>{
+    try {
+        const response= await postData(`${apiUrl}/api/book/`,data);
+        return response;
+    } catch (error) {
+        console.error('Error',error);
+        toast.error("Invalid credentials!");
+    }
+}
+

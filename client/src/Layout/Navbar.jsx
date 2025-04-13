@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IoMdPerson } from "react-icons/io";
 import { FaBars } from "react-icons/fa6";
 import { FaCartArrowDown } from "react-icons/fa";
@@ -6,6 +6,12 @@ import { Link } from 'react-router-dom';
 import img from '../assets/img_1.jpg';
 
 const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <nav className="bg-[#99BC85] text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap">
@@ -13,15 +19,24 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <img src={img} alt="Restaurant Logo" className="h-10 w-10 rounded-full" />
           <span className="ml-3 text-xl font-bold">Red Chillies</span>
         </div>
-        {isAuthenticated && (
-          <div className="hidden md:flex space-x-6">
-            <Link to="/" className="hover:text-yellow-500">Home</Link>
-            <Link to="/menu" className="hover:text-yellow-500">Menu</Link>
-            <Link to="/about" className="hover:text-yellow-500">About Us</Link>
-            <Link to="/contact" className="hover:text-yellow-500">Contact</Link>
-            <Link to="/foods" className="hover:text-yellow-500">Order Now</Link>
-          </div>
-        )}
+
+        <div className="md:hidden ml-4">
+          <button onClick={toggleMobileMenu} className="hover:text-yellow-500">
+            <FaBars size={25} />
+          </button>
+        </div>
+
+        <div className="hidden md:flex space-x-6">
+          {isAuthenticated && (
+            <>
+              <Link to="/" className="hover:text-yellow-500">Home</Link>
+              <Link to="/menu" className="hover:text-yellow-500">Menu</Link>
+              <Link to="/about" className="hover:text-yellow-500">About Us</Link>
+              <Link to="/contact" className="hover:text-yellow-500">Contact</Link>
+              <Link to="/foods" className="hover:text-yellow-500">Order Now</Link>
+            </>
+          )}
+        </div>
 
         <div className="hidden md:flex items-center space-x-6">
           {!isAuthenticated ? (
@@ -54,7 +69,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
         )}
 
         {isAuthenticated && (
-          <div className="flex items-center space-x-6 ml-4">
+          <div className="hidden md:flex items-center space-x-6 ml-4">
             <Link to="/cart" className="relative hover:text-yellow-500">
               <span className="absolute -top-2 -right-3 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
                 5
@@ -67,13 +82,34 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
             </Link>
           </div>
         )}
-
-        <div className="md:hidden ml-4">
-          <button className="hover:text-yellow-500">
-            <FaBars size={25} />
-          </button>
-        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden px-4 pb-4 space-y-3">
+          {isAuthenticated && (
+            <>
+              <Link to="/" className="block hover:text-yellow-500">Home</Link>
+              <Link to="/menu" className="block hover:text-yellow-500">Menu</Link>
+              <Link to="/about" className="block hover:text-yellow-500">About Us</Link>
+              <Link to="/contact" className="block hover:text-yellow-500">Contact</Link>
+              <Link to="/foods" className="block hover:text-yellow-500">Order Now</Link>
+
+              <div className="mt-4">
+                <span className="block mb-2">Hi, {loggedInUser?.username}</span>
+                <button onClick={handleLogout} className="hover:text-yellow-500">Logout</button>
+              </div>
+            </>
+          )}
+
+          {!isAuthenticated && (
+            <>
+              <Link to="/login" className="block hover:text-yellow-500">Login</Link>
+              <Link to="/register" className="block hover:text-yellow-500">Register</Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

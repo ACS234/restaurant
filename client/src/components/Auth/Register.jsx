@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Signup } from '../../services/apiService';
 import { ACCESS_TOKEN ,REFRESH_TOKEN } from '../../constants';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,7 +23,7 @@ const Register = () => {
         navigate('/login');
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong!');
+      toast.error(err.message || 'Something went wrong!');
     } finally {
       setLoading(false);
     }
@@ -36,9 +35,7 @@ const Register = () => {
         <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Create your account
         </h2>
-        {error && (
-          <div className="text-red-500 text-sm text-center">{error}</div>
-        )}
+        <ToastContainer/>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="username"
@@ -74,6 +71,7 @@ const Register = () => {
           >
             {loading ? <Loader /> : 'Register'}
           </button>
+          <p>Already have an account <Link to='/login'>Login</Link></p>
         </form>
       </div>
     </div>

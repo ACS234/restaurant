@@ -34,6 +34,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         model=Reservation
         fields='__all__'
 
+class TableSerializer(serializers.ModelSerializer):
+    tables=RestaurantSerializer(many=True,read_only=True)
+    class Meta:
+        model=Table
+        fields='__all__'
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     foods = FoodSerializer(many=True, read_only=True)

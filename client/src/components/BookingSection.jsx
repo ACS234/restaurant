@@ -1,33 +1,68 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-
+import React, { useState, useEffect } from 'react';
+import { bookTable, getTable } from '../services/apiService';
+import { toast, ToastContainer } from 'react-toastify';
 const BookingSection = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [people, setPeople] = useState('');
-  const [message, setMessage] = useState('');
+  const [formData, setFormData] = useState({
+    customer_name: '',
+    customer_email: '',
+    reservation_date: '',
+    reservation_time: '',
+    number_of_people: '',
+    table: null,
+  });
+
+
+  useEffect(() => {
+    const fetchTable = async () => {
+      try {
+        const response = await getTable();
+        if (response.data && response.data.table.id) {
+          setFormData((prev) => ({
+            ...prev,
+            table: response.data.table.id,
+          }));
+        console.log("table",response.data)
+        } else {
+          toast.error('No available table at the moment.');
+        }
+      } catch (error) {
+        toast.error('Failed to fetch table info.',error);
+      }
+    };
+
+    fetchTable();
+  }, []);
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.post('http://localhost:8000/reservations/book/', {
-        customer_name: name,
-        customer_email: email,
-        reservation_date: date,
-        reservation_time: time,
-        number_of_people: people,
-        table: 1 // assuming you're booking Table ID 1
-      });
+    if (!formData.table) {
+      toast.error('Cannot submit without a table ID.');
+      return;
+    }
 
-      setMessage(response.data.message);
+    const data = new FormData();
+    for (let key in formData) {
+      data.append(key, formData[key]);
+    }
+
+    try {
+      const response = await bookTable(data);
+      toast.success(response.data.message);
     } catch (error) {
       if (error.response && error.response.data.error) {
-        setMessage(error.response.data.error);
+        toast.error(error.response.data.error);
       } else {
-        setMessage('An error occurred while booking.');
+        toast.error('An error occurred while booking.');
       }
     }
   };
@@ -35,48 +70,54 @@ const BookingSection = () => {
   return (
     <section className="py-16 px-4 bg-red-600 text-white text-center">
       <h2 className="text-3xl font-bold mb-6">Book A Table</h2>
+      <ToastContainer/>
       <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-4">
-        <input 
-          type="text" 
-          placeholder="Your Name" 
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+        <input
+          type="text"
+          name="customer_name"
+          placeholder="Your Name"
+          value={formData.customer_name}
+          onChange={handleChange}
           className="w-full p-3 bg-red-400 rounded-lg shadow-lg focus:outline-none"
-          required 
+          required
         />
-        <input 
-          type="email" 
-          placeholder="Your Email" 
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+        <input
+          type="email"
+          name="customer_email"
+          placeholder="Your Email"
+          value={formData.customer_email}
+          onChange={handleChange}
           className="w-full p-3 bg-red-400 rounded-lg shadow-lg focus:outline-none"
-          required 
+          required
         />
-        <input 
-          type="date" 
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
+        <input
+          type="date"
+          name="reservation_date"
+          value={formData.reservation_date}
+          onChange={handleChange}
           className="w-full p-3 bg-red-400 rounded-lg shadow-lg focus:outline-none"
-          required 
+          required
         />
-        <input 
-          type="time" 
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
+        <input
+          type="time"
+          name="reservation_time"
+          value={formData.reservation_time}
+          onChange={handleChange}
           className="w-full p-3 bg-red-400 rounded-lg shadow-lg focus:outline-none"
-          required 
+          required
         />
-        <input 
-          type="number" 
+        <input
+          type="number"
+          name="number_of_people"
           placeholder="Number of People"
-          value={people}
-          onChange={(e) => setPeople(e.target.value)}
+          value={formData.number_of_people}
+          onChange={handleChange}
           className="w-full p-3 bg-red-400 rounded-lg shadow-lg focus:outline-none"
-          required 
+          required
         />
-        <button type="submit" className="bg-white text-red-600 py-2 px-6 rounded-full hover:bg-gray-200">Book Now</button>
-
-        {message && <p className="mt-4 text-lg font-semibold">{message}</p>}
+        <button type="submit" className="bg-white text-red-600 py-2 px-6 rounded-full hover:bg-gray-200">
+          Book Now
+        </button>
       </form>
     </section>
   );

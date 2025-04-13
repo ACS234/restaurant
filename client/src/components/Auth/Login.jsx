@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Login as loginUser } from '../../services/apiService';
 import { ACCESS_TOKEN,REFRESH_TOKEN } from '../../constants';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -19,10 +20,11 @@ const Login = () => {
       if (res?.access && res?.refresh) {
         sessionStorage.setItem(ACCESS_TOKEN, res.access);
         sessionStorage.setItem(REFRESH_TOKEN, res.refresh);
+        toast.success("Login Successful")
         navigate('/');
       }
     } catch (error) {
-      console.error(error);
+      toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -34,6 +36,7 @@ const Login = () => {
         <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Sign in to your account
         </h2>
+        <ToastContainer/>
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm space-y-4">
             <input
@@ -70,6 +73,7 @@ const Login = () => {
               {loading ? <Loader /> : 'Sign In'}
             </button>
           </div>
+          <p>Don't have an account <Link to ='/register'>Register</Link></p>
         </form>
       </div>
     </div>

@@ -35,7 +35,7 @@ const MenuSection = () => {
   return (
     <section className="py-16 px-4 bg-gray-100 text-center">
       <h2 className="text-3xl font-bold mb-6">Our Menu</h2>
-      <hr class="w-1/2 mx-auto my-10 border-t-4 border-dashed border-blue-500" />
+      <hr className="w-1/2 mx-auto my-10 border-t-4 border-dashed border-blue-500" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {menus.map((menu) => (
           <div key={menu.id} className="h-1/4">

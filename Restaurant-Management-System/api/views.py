@@ -207,6 +207,15 @@ class MenuDetailAPIView(APIView):
     #     menu = get_object_or_404(Menu, pk=pk)
     #     menu.delete()
     #     return Response(status=status.HTTP_204_NO_CONTENT)
+class TableAPIView(APIView):
+    def get(self, request):
+        try:
+            tables = Table.objects.all()
+            serializer = TableSerializer(tables, many=True)  
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CartItemCreateView(APIView):
     # permission_classes = [permissions.IsAuthenticated]
