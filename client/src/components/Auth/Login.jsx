@@ -20,7 +20,6 @@ const Login = () => {
       if (res?.access && res?.refresh) {
         sessionStorage.setItem(ACCESS_TOKEN, res.access);
         sessionStorage.setItem(REFRESH_TOKEN, res.refresh);
-        toast.success("Login Successful")
         navigate('/');
       }
     } catch (error) {

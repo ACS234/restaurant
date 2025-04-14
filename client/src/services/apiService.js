@@ -78,7 +78,6 @@ export const getCart=async()=>{
 // For Posting Data Function
 const postData = async (url, data) => {
     const token = sessionStorage.getItem(ACCESS_TOKEN);
-    console.log("access token from api service", token)
     try {
         const response = await axios.post(url, data, {
             headers: {
@@ -109,11 +108,10 @@ export const Login = async (data) => {
     try {
         const response = await postData(`${apiUrl}/auth/api/token/`, data);
         toast.success("Login successful!");
-        console.log("response", response)
         return response;
     } catch (error) {
         console.error('Error:', error);
-        toast.error("Invalid credentials!");
+        toast.error("Invalid credentials!",error);
 
     }
 }
@@ -137,7 +135,7 @@ export const addCart = async (data) => {
         return response;
     } catch (error) {
         console.error('Error', error);
-        toast.error("Invalid credentials!");
+        toast.error("Invalid credentials!",error);
     }
 }
 

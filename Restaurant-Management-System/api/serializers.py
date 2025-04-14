@@ -59,9 +59,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     food=FoodSerializer()
+    total_price = serializers.SerializerMethodField()
+
     class Meta:
         model = CartItem
-        fields = '__all__'
+        fields = ['id', 'food', 'quantity', 'total_price']
+
+    def get_total_price(self, obj):
+        return obj.food.price * obj.quantity
 
 
 class ReceiptSerializer(serializers.ModelSerializer):

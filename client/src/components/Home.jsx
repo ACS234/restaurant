@@ -15,7 +15,6 @@ export default function Home() {
             <Header />
             <MainSection />
             <StarterSection />
-            <MenuSection />
             <GallerySection />
             <BookingSection />
             <ReviewSection />

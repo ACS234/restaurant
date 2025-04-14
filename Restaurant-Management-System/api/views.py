@@ -236,48 +236,18 @@ class CartItemCreateView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-    # def post(self, request, format=None):
-    #     serializer = CartItemSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         # Check if this food item is already in the cart
-    #         existing_item = CartItem.objects.filter(user=request.user, food=serializer.validated_data['food']).first()
-    #         food=Food.objects.all()
-    #         if existing_item:
-    #             # Update quantity if it already exists
-    #             existing_item.quantity += serializer.validated_data.get('quantity', 1)
-    #             existing_item.quantity*food.price
-    #             existing_item.save()
-    #             return Response(CartItemSerializer(existing_item).data, status=status.HTTP_200_OK)
-    #         else:
-    #             # Create new cart item
-    #             serializer.save(user=request.user)
-    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def post(self, request, format=None):
-        serializer = CartItemSerializer(data=request.data)
-        if serializer.is_valid():
-            food_item = serializer.validated_data['food']
-            quantity = serializer.validated_data.get('quantity', 1)
-
-            # Check if this food item is already in the cart
-            existing_item = CartItem.objects.filter(user=request.user, food=food_item).first()
-
-            if existing_item:
-                # Update quantity
-                existing_item.quantity += quantity
-                existing_item.total_price = existing_item.quantity * food_item.price
-                existing_item.save()
-                return Response(CartItemSerializer(existing_item).data, status=status.HTTP_200_OK)
-            else:
-                # Create new cart item with total_price
-                cart_item = serializer.save(user=request.user)
-                cart_item.total_price = cart_item.quantity * food_item.price
-                cart_item.save()
-                return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        food_id = request.data.get('food')  
+        quantity = request.data.get('quantity', 1) 
+        
+        try:
+            food = Food.objects.get(id=food_id)
+        except Food.DoesNotExist:
+            return Response({"error": "Food item not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        cart_item = CartItem.objects.create(food=food, quantity=quantity, user=request.user)
+        
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
 
 class ReservationAPIView(APIView):

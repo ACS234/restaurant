@@ -1,11 +1,22 @@
 import React, { useState,useEffect } from 'react';
-import { IoMdPerson } from "react-icons/io";
+import { IoMdPerson,IoIosContacts,IoMdLogIn  } from "react-icons/io";
 import { FaBars } from "react-icons/fa6";
 import { FaCartArrowDown } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import img from '../assets/img_1.jpg';
 import { getCart } from '../services/apiService';
 import { toast ,ToastContainer} from 'react-toastify';
+import { AiOutlineLogout } from "react-icons/ai";
+import { IoHome } from "react-icons/io5";
+import { MdRoundaboutRight,MdOutlineMenuBook } from "react-icons/md";
+import { LiaFirstOrderAlt } from "react-icons/lia";
+import { GiArchiveRegister } from "react-icons/gi";
+
+
+
+
+
+
 
 
 const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
@@ -49,11 +60,11 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
         <div className="hidden md:flex space-x-6">
           {isAuthenticated && (
             <>
-              <Link to="/" className="hover:text-yellow-500">Home</Link>
-              <Link to="/menu" className="hover:text-yellow-500">Menu</Link>
-              <Link to="/about" className="hover:text-yellow-500">About Us</Link>
-              <Link to="/contact" className="hover:text-yellow-500">Contact</Link>
-              <Link to="/foods" className="hover:text-yellow-500">Order Now</Link>
+              <Link to="/" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoHome size={25}/></Link>
+              <Link to="/menu" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><MdOutlineMenuBook size={25} /></Link>
+              <Link to="/about" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><MdRoundaboutRight size={25}/></Link>
+              <Link to="/contact" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoIosContacts size={25}/></Link>
+              <Link to="/foods" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><LiaFirstOrderAlt size={25} /></Link>
             </>
           )}
         </div>
@@ -61,13 +72,13 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
         <div className="hidden md:flex items-center space-x-6">
           {!isAuthenticated ? (
             <>
-              <Link to="/login" className="hover:text-yellow-500">Login</Link>
-              <Link to="/register" className="hover:text-yellow-500">Register</Link>
+              <Link to="/login" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoMdLogIn size={25} /></Link>
+              <Link to="/register" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><GiArchiveRegister size={25} /></Link>
             </>
           ) : (
             <>
               <span className="text-sm">Hi, {loggedInUser?.username}</span>
-              <button onClick={handleLogout} className="text-white hover:text-yellow-500">Logout</button>
+              <button onClick={handleLogout} className="transform transition-transform duration-200 hover:scale-125 hover:text-red-600"><AiOutlineLogout size={25}/></button>
             </>
           )}
         </div>

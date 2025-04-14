@@ -27,51 +27,44 @@ const FoodPage = () => {
     if (loading) {
         return <div>Loading...</div>;
     }
+
     return (
-        <div className="bg-gray-50">
-            <ToastContainer/>
-            <section className="py-16 px-4 text-justify">
+        <div className="bg-gray-50 min-h-screen">
+            <ToastContainer />
+            <section className="py-8 px-2">
                 <div className="max-w-7xl mx-auto">
-                    <h2 className="text-4xl font-bold mb-2">Our Menu</h2>
-                    <hr className="my-8 border-t-2 border-gray-300" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <h2 className="text-2xl font-bold mb-4">Our Menu</h2>
+                    <hr className="mb-6 border-t border-gray-300" />
+                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
                         {foods.map((menuItem) => (
-                            <div key={menuItem.id} className="bg-white p-6 rounded-lg shadow-lg">
+                            <div key={menuItem.id} className="bg-white p-2 rounded-md shadow-sm text-xs">
                                 <img
                                     src={`http://localhost:8000/${menuItem.image}`}
                                     alt={menuItem.title}
-                                    className="w-full h-60 object-cover rounded-lg mb-4"
+                                    className="w-full h-24 object-cover rounded mb-2"
                                 />
-                                <h3 className="font-semibold text-2xl mb-2">{menuItem.name}</h3>
-                                <p className="text-md text-justify text-gray-700 mb-2">{(menuItem.description).substring(0,10)}</p>
-                                <div className="mb-4 text-justify">
-                                    <span className="font-semibold text-yellow-500">Rating: </span>
-                                    <span className="text-md text-gray-700">{menuItem.rating} / 5</span>
+                                <h3 className="font-semibold text-sm mb-1 truncate">{menuItem.name}</h3>
+                                <p className="text-gray-700 mb-1 truncate">{menuItem.description.substring(0, 20)}...</p>
+                                <div className="mb-1">
+                                    <span className="font-semibold text-yellow-500">Rating:</span>{' '}
+                                    {menuItem.rating} / 5
                                 </div>
-                                <div className="list-disc mt-2 text-justify text-gray-600 mb-2">
-                                    <p>Ingredients:{menuItem.ingredients}</p>
-                                </div>
-                                <div className="space-y-2 mb-2 text-justify">
-                                    <p className="text-md">
-                                        <strong>Price:</strong>₹{menuItem.price}
-                                    </p>
-                                    <p className="text-md capitalize">
-                                        <strong>Cuisine Type:</strong> {menuItem.cuisine_type}
-                                    </p>
-                                    <p className="text-md">
-                                        <strong>Stock Quantity:</strong> {menuItem.stock_quantity}
-                                    </p>
-                                </div>
-                                <div className="flex mt-4 space-x-4">
-                                    <Link to="/order"
-                                        className="inline-block px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
+                                <p className="text-gray-600 mb-1 truncate"><strong>Ingredients:</strong> {menuItem.ingredients}</p>
+                                <p><strong>Price:</strong> ₹{menuItem.price}</p>
+                                <p><strong>Cuisine:</strong> {menuItem.cuisine_type}</p>
+                                <p><strong>Stock:</strong> {menuItem.stock_quantity}</p>
+                                <div className="flex mt-2 space-x-20">
+                                    <Link
+                                        to="/order"
+                                        className="mt-2 px-1 py-0.5 bg-green-500 text-white rounded-sm text-[10px] hover:bg-green-700"
                                     >
-                                        Add Cart
+                                        Add
                                     </Link>
-                                    <Link to="#order"
-                                        className="inline-block px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
+                                    <Link
+                                        to="/order"
+                                        className="mt-2 px-1 py-0.5 bg-yellow-500 text-white rounded-sm text-[10px] hover:bg-yellow-600"
                                     >
-                                        Order Now
+                                        Order
                                     </Link>
                                 </div>
                             </div>
