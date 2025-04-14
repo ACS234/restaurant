@@ -62,7 +62,7 @@ class CartItem(models.Model):
     
 class Table(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='tables')
-    table_number = models.CharField(max_length=10)
+    table_number = models.IntegerField()
     seats = models.PositiveIntegerField()
 
     def __str__(self):
@@ -75,7 +75,7 @@ class Table(models.Model):
 
 class Reservation(models.Model):
     table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='reservations')
-    customer_name = models.CharField(max_length=100)
+    customer_name = models.CharField(max_length=100,null=True,blank=True)
     customer_email = models.EmailField()
     reservation_date = models.DateField()
     reservation_time = models.TimeField()

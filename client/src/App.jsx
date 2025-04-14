@@ -59,6 +59,7 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute><AddToCart /></ProtectedRoute>} />
         <Route path="/gallery" element={<GallerySection />} />
         <Route path="/booking" element={<ProtectedRoute><BookingSection /></ProtectedRoute>} />
+        <Route path="/order" element={<ProtectedRoute><BookingSection /></ProtectedRoute>} />
         <Route path="/reviews" element={<ReviewSection />} />
       </Routes>
       <Footer />

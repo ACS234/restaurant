@@ -6,12 +6,11 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import permissions
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404, render
 from django.http import FileResponse
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import generics,filters,status
 from .models import *
 from .serializers import *
 from django.template.loader import render_to_string
@@ -21,10 +20,18 @@ from django.conf import settings
 from PIL import Image
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-# Imp data
-# path_to_wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-# config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 stripe.api_key = settings.STRIPE_SECRET_KEY
+from django_filters.rest_framework import DjangoFilterBackend
+
+# Search API for Food And Menu
+
+class SearchFoodAPIView(generics.ListAPIView):
+    queryset = Food.objects.all()
+    serializer_class = FoodSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name','category', 'is_vegetarian']
+        
+
 
 #  Restaurant API
 class RestaurantAPIView(APIView):
@@ -98,8 +105,9 @@ class GenerateQRCodeAPIView(APIView):
 class FoodAPIView(APIView):
     def get(self, request):
         foods = Food.objects.all()
+        total=foods.count()
         serializer = FoodSerializer(foods, many=True)
-        return Response({"message":"Foods gets Successfully","data":serializer.data},status=status.HTTP_200_OK)
+        return Response({"message":"Foods gets Successfully","total":total,"data":serializer.data},status=status.HTTP_200_OK)
 
 
     def post(self, request):
@@ -212,32 +220,76 @@ class TableAPIView(APIView):
         try:
             tables = Table.objects.all()
             serializer = TableSerializer(tables, many=True)  
-            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"message":"Your Tables","data": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CartItemCreateView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        try:
+            cart=CartItem.objects.select_related('food').all()
+            serializer=CartItemSerializer(cart,many=True)
+            return Response({"data":serializer.data},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    # def post(self, request, format=None):
+    #     serializer = CartItemSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         # Check if this food item is already in the cart
+    #         existing_item = CartItem.objects.filter(user=request.user, food=serializer.validated_data['food']).first()
+    #         food=Food.objects.all()
+    #         if existing_item:
+    #             # Update quantity if it already exists
+    #             existing_item.quantity += serializer.validated_data.get('quantity', 1)
+    #             existing_item.quantity*food.price
+    #             existing_item.save()
+    #             return Response(CartItemSerializer(existing_item).data, status=status.HTTP_200_OK)
+    #         else:
+    #             # Create new cart item
+    #             serializer.save(user=request.user)
+    #             return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         serializer = CartItemSerializer(data=request.data)
         if serializer.is_valid():
+            food_item = serializer.validated_data['food']
+            quantity = serializer.validated_data.get('quantity', 1)
+
             # Check if this food item is already in the cart
-            existing_item = CartItem.objects.filter(user=request.user, food=serializer.validated_data['food']).first()
+            existing_item = CartItem.objects.filter(user=request.user, food=food_item).first()
+
             if existing_item:
-                # Update quantity if it already exists
-                existing_item.quantity += serializer.validated_data.get('quantity', 1)
+                # Update quantity
+                existing_item.quantity += quantity
+                existing_item.total_price = existing_item.quantity * food_item.price
                 existing_item.save()
                 return Response(CartItemSerializer(existing_item).data, status=status.HTTP_200_OK)
             else:
-                # Create new cart item
-                serializer.save(user=request.user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # Create new cart item with total_price
+                cart_item = serializer.save(user=request.user)
+                cart_item.total_price = cart_item.quantity * food_item.price
+                cart_item.save()
+                return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class ReservationAPIView(APIView):
+    def get(self,request):
+        try:
+            reservation=Reservation.objects.all()
+            serializer=ReservationSerializer(reservation,many=True)
+            return Response({"message":"Your reservations","data":serializer.data},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
         if serializer.is_valid():

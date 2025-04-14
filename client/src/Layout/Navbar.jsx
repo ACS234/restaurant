@@ -1,25 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { IoMdPerson } from "react-icons/io";
 import { FaBars } from "react-icons/fa6";
 import { FaCartArrowDown } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import img from '../assets/img_1.jpg';
+import { getCart } from '../services/apiService';
+import { toast ,ToastContainer} from 'react-toastify';
+
 
 const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+      const [cartData, setCartData] = useState([]);
+  
+      useEffect(() => {
+          const fetchFoods = async () => {
+              try {
+                  const data = await getCart();
+                  console.log('Fetched navbar cart data:', data);
+                  setCartData(data);
+              } catch (error) {
+                  toast.error('Failed to load cart items.');
+                  console.error(error);
+              }
+          };
+  
+          fetchFoods();
+      }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    <nav className="bg-[#99BC85] text-white shadow-lg">
+    <nav className="bg-[#99BC85] fixed z-10 w-full text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center flex-wrap">
         <div className="flex items-center">
           <img src={img} alt="Restaurant Logo" className="h-10 w-10 rounded-full" />
           <span className="ml-3 text-xl font-bold">Red Chillies</span>
         </div>
-
+        <ToastContainer/>
         <div className="md:hidden ml-4">
           <button onClick={toggleMobileMenu} className="hover:text-yellow-500">
             <FaBars size={25} />
@@ -72,7 +92,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <div className="hidden md:flex items-center space-x-6 ml-4">
             <Link to="/cart" className="relative hover:text-yellow-500">
               <span className="absolute -top-2 -right-3 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
-                5
+                {cartData.length}
               </span>
               <FaCartArrowDown size={25} />
             </Link>

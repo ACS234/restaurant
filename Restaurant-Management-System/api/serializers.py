@@ -30,6 +30,7 @@ class MenuSerializer(serializers.ModelSerializer):
         # exclude=['foods',]
 
 class ReservationSerializer(serializers.ModelSerializer):
+    # tables='TableSerializer'
     class Meta:
         model=Reservation
         fields='__all__'
@@ -57,9 +58,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
+    food=FoodSerializer()
     class Meta:
         model = CartItem
-        fields = ['id', 'user', 'food', 'quantity']
+        fields = '__all__'
 
 
 class ReceiptSerializer(serializers.ModelSerializer):

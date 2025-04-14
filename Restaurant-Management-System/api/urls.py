@@ -20,4 +20,5 @@ urlpatterns = [
     path('qr_code/<int:restaurant_id>/<int:table_id>/', GenerateQRCodeAPIView.as_view(), name='generate_qr_code'),
     path('order/<int:restaurant_id>/<int:table_id>/', MenusAPIView.as_view(), name='menu_qr'),
     path('get_table/',TableAPIView.as_view(),name='table'),
+    path('foods/search/',SearchFoodAPIView.as_view(),name='search_food'),
 ]
