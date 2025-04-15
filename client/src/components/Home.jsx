@@ -1,13 +1,11 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import Header from './Header'
-import StarterSection from './StarterSection'
-import MenuDetail from './MenuDetail'
 import MainSection from './MainSection'
-import MenuSection from './MenuSection'
-import FoodDetail from './Fooddetail'
-import GallerySection from './GallerySection'
-import BookingSection from './BookingSection'
-import ReviewSection from './ReviewSection'
+import StarterSection from './StarterSection'
+
+const GallerySection = lazy(() => import('./GallerySection'))
+const BookingSection = lazy(() => import('./BookingSection'))
+const ReviewSection = lazy(() => import('./ReviewSection'))
 
 export default function Home() {
     return (
@@ -15,9 +13,18 @@ export default function Home() {
             <Header />
             <MainSection />
             <StarterSection />
-            <GallerySection />
-            <BookingSection />
-            <ReviewSection />
+
+            <Suspense fallback={<div>Loading gallery...</div>}>
+                <GallerySection />
+            </Suspense>
+
+            <Suspense fallback={<div>Loading booking...</div>}>
+                <BookingSection />
+            </Suspense>
+
+            <Suspense fallback={<div>Loading reviews...</div>}>
+                <ReviewSection />
+            </Suspense>
         </>
     )
 }

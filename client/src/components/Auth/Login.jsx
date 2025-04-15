@@ -12,9 +12,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     const formData = new FormData(e.target);
-
     try {
       const res = await loginUser(formData);
       if (res?.access && res?.refresh) {
@@ -72,7 +70,7 @@ const Login = () => {
               type="submit"
               className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {loading ? <Loader /> : 'Sign In'}
+              {loading ? 'Logging in...' : 'Sign In'}
             </button>
           </div>
           <p>Don't have an account <Link to ='/register'>Register</Link></p>

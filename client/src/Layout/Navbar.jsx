@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { IoMdPerson, IoIosContacts, IoMdLogIn } from "react-icons/io";
 import { FaBars } from "react-icons/fa6";
 import { FaCartArrowDown } from "react-icons/fa";
@@ -14,6 +14,18 @@ import { GiArchiveRegister } from "react-icons/gi";
 
 const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentCartCount, setCurrentCartCount] = useState(0);
+  const [currentUsername, setCurrentUsername] = useState('');
+
+  useEffect(() => {
+    const cartFromStorage = JSON.parse(sessionStorage.getItem('cart')) || [];
+    setCurrentCartCount(cartFromStorage.length);  
+    const storedUser = JSON.parse(sessionStorage.getItem('user')) || null;
+    console.log("stored data",storedUser)
+    if (storedUser && storedUser.username) {
+      setCurrentUsername(storedUser.username);  
+    }
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -52,7 +64,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
             </>
           ) : (
             <>
-              <span className="text-sm">Hi, {loggedInUser?.username}</span>
+              <span className="text-sm">Hi, {currentUsername}</span>
               <button onClick={handleLogout} className="transform transition-transform duration-200 hover:scale-125 hover:text-red-600"><AiOutlineLogout size={25} /></button>
             </>
           )}
@@ -78,7 +90,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <div className="hidden md:flex items-center space-x-6 ml-4">
             <Link to="/cart" className="relative hover:text-yellow-500">
               <span className="absolute -top-2 -right-3 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
-                2
+                {currentCartCount}
               </span>
               <FaCartArrowDown size={25} />
             </Link>
@@ -101,7 +113,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
               <Link to="/foods" className="block hover:text-yellow-500">Order Now</Link>
               <Link to="/cart" className="relative hover:text-yellow-500">
                 <span className="absolute -top-2 mr-80 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
-                0
+                {currentCartCount}
                 </span>
                 <FaCartArrowDown size={25} />
               </Link>

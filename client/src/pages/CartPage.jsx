@@ -64,20 +64,17 @@ const AddToCart = () => {
                 key={item.id}
                 className="flex items-center gap-4 border-b pb-4 overflow-x-auto px-2"
               >
-                {/* Image */}
                 <img
                   src={`http://localhost:8000${item.food.image}`}
                   alt={item.food.name}
                   className="min-w-[80px] w-20 h-20 object-cover rounded-lg"
                 />
 
-                {/* Item Info */}
                 <div className="min-w-[140px] flex-1">
                   <h3 className="font-semibold text-gray-800 text-base">{item.food.name}</h3>
                   <p className="text-sm text-gray-600">Price: ₹{item.food.price}</p>
                 </div>
 
-                {/* Quantity Controls */}
                 <div className="min-w-[120px] flex items-center gap-2">
                   <button
                     onClick={() => handleQuantityChange(item.id, -1)}
@@ -94,7 +91,6 @@ const AddToCart = () => {
                   </button>
                 </div>
 
-                {/* Total */}
                 <div className="min-w-[90px] text-right">
                   <span className="text-xs text-gray-500 block">Total</span>
                   <p className="text-green-600 font-semibold">
@@ -102,7 +98,6 @@ const AddToCart = () => {
                   </p>
                 </div>
 
-                {/* Delete Button */}
                 <button
                   onClick={() => removeCartItem(item.id)}
                   className="min-w-[40px] p-2 bg-gray-200 rounded-full hover:bg-gray-300"
@@ -111,8 +106,6 @@ const AddToCart = () => {
                 </button>
               </div>
             ))}
-
-            {/* Checkout Button */}
             <div className="mt-6 text-center sm:text-right">
               <button
                 onClick={handleCheckout}

@@ -47,8 +47,11 @@ const CheckoutPage = () => {
     //   toast.error('Please fill in all the shipping details.');
     //   return;
     // }
+    
     toast.success('Order placed successfully!');
-    navigate('/order-confirmation');
+    navigate('/payment',{
+      state: { totalAmount, cartData }
+    });
   };
 
   return (
