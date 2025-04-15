@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
-import { tokenRefresh } from '../services/apiService';
+// import { tokenRefresh } from '../services/apiService';
+
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 import axios from 'axios';
 
@@ -20,7 +21,7 @@ export const refreshAccessToken = async () => {
     const refreshToken = sessionStorage.getItem(REFRESH_TOKEN);
     if (!refreshToken) return null;
 
-    const response = await tokenRefresh('/auth/api/token/refresh/', {
+    const response = await axios.post('/auth/api/token/refresh/', {
       refresh: refreshToken,
     });
 

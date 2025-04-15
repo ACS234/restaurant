@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route,useNavigate } from 'react-router-dom';
 import { ACCESS_TOKEN } from './constants';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Navbar from './layout/Navbar';
@@ -7,6 +7,8 @@ import Footer from './layout/Footer';
 import OrderPage from './pages/OrderPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/ConfirmOrderPage';
+// import {toast, ToastContainer } from 'react-toastify';
+// import { getCart } from './services/apiService';
 
 // Lazy loaded components
 const Header = lazy(() => import('./components/Header'));
@@ -25,6 +27,23 @@ const Register = lazy(() => import('./components/Auth/Register'));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate=useNavigate()
+
+  // const [cartData, setCartData] = useState([]);
+  
+  //     useEffect(() => {
+  //         const fetchCarts = async () => {
+  //             try {
+  //                 const data = await getCart();
+  //                 console.log(data)
+  //                 setCartData(data);
+  //             } catch (error) {
+  //                 toast.error('Failed to load cart items.');
+  //                 console.error(error);
+  //             }
+  //         };
+  //         fetchCarts();
+  //     }, []);
 
   useEffect(() => {
     const token = sessionStorage.getItem(ACCESS_TOKEN);
@@ -40,6 +59,7 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem(ACCESS_TOKEN);
     setIsAuthenticated(false);
+    navigate('/login')
   };
 
   return (

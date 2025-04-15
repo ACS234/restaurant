@@ -12,6 +12,7 @@ urlpatterns = [
     path('menus/<int:pk>/', MenuDetailAPIView.as_view(), name='menu_detail'),
     path('orders/items/', OrderItemAPIView.as_view(), name='order_item'),
     path('cart/add/', CartItemCreateView.as_view(), name='add-to-cart'),
+    path('cart/<int:pk>/remove/', CartDetailAPIView.as_view(), name='delete-to-cart'),
     path('book/', ReservationAPIView.as_view(), name='reservation-book'),
     path('orders/<int:order_id>/status/', OrderStatusAPIView.as_view(), name='order_status'),
     path('payments/', PaymentAPIView.as_view(), name='payment'),

@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Signup } from '../../services/apiService';
-import { ACCESS_TOKEN ,REFRESH_TOKEN } from '../../constants';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../../constants';
 import { toast, ToastContainer } from 'react-toastify';
 
 const Register = () => {
-  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
     const formData = new FormData(e.target);
 
     try {
@@ -18,14 +19,15 @@ const Register = () => {
       if (res?.access && res?.refresh) {
         sessionStorage.setItem(ACCESS_TOKEN, res.access);
         sessionStorage.setItem(REFRESH_TOKEN, res.refresh);
-        navigate('/');
+        toast.success(res.response)
+        setTimeout(()=>{
+          navigate('/');
+        })
       } else {
         navigate('/login');
       }
     } catch (err) {
       toast.error(err.message || 'Something went wrong!');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -35,7 +37,7 @@ const Register = () => {
         <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           Create your account
         </h2>
-        <ToastContainer/>
+        <ToastContainer />
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="username"
@@ -69,7 +71,7 @@ const Register = () => {
             type="submit"
             className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            {loading ? <Loader /> : 'Register'}
+            Register
           </button>
           <p>Already have an account <Link to='/login'>Login</Link></p>
         </form>

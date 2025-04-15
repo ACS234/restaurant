@@ -55,6 +55,16 @@ export const getMenuDetail = async (id) => {
     }
 }
 
+export const getFood = async (id) => {
+    try {
+        const response = await getData(`${apiUrl}/api/foods/${id}/`);
+        return response?.data;
+    } catch (error) {
+        console.error("Something Went Wrong", error);
+        throw error
+    }
+}
+
 export const getTable = async () => {
     try {
         const response = await getData(`${apiUrl}/api/get_table/`);
@@ -69,7 +79,7 @@ export const getTable = async () => {
 export const getCart=async()=>{
     try {
         const response=await getData(`${apiUrl}/api/cart/add/`)
-        return response?.data
+        return response?.data;
     } catch (error) {
         console.error('Error',error)
     }
@@ -91,18 +101,29 @@ const postData = async (url, data) => {
     }
 }
 
-// Function For Signup 
-export const Signup = async (data) => {
+const registerData = async (url, data) => {
     try {
-        console.log("apiurl", apiUrl)
-        const response = await postData(`${apiUrl}/auth/api/register/`, data);
-        toast.success("Registration successful!");
-        return response?.data;
+        const response = await axios.post(url, data);
+        return response.data;
     } catch (error) {
-        toast.error("Registration failed!", error);
+        console.error('Error posting data:', error);
+        throw error;
     }
 }
 
+// Function For Signup 
+export const Signup = async (data) => {
+    try {
+        const response = await registerData(`${apiUrl}/auth/api/register/`, data);
+        return response?.data;
+    } catch (error) {
+        console.log("Error",error)
+        throw error;
+    }
+}
+
+
+ 
 // Function For Login 
 export const Login = async (data) => {
     try {
@@ -149,3 +170,29 @@ export const bookTable = async (data) => {
     }
 }
 
+
+const deleteData = async (url, data) => {
+    const token = sessionStorage.getItem(ACCESS_TOKEN);
+    try {
+        const response = await axios.delete(url, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting data:', error);
+        throw error;
+    }
+}
+
+
+export const removeCart=async(id)=>{
+    try {
+        const response=await deleteData(`${apiUrl}/api/cart/${id}/remove/`);
+        return response;
+    } catch (error) {
+        toast.error("Error",error)
+        throw error;   
+    }
+}

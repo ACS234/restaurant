@@ -34,7 +34,7 @@ const MenuSection = () => {
       <h2 className="text-2xl font-bold mb-4">Our Menu</h2>
       <hr className="w-1/2 mx-auto my-6 border-t-2 border-dashed border-blue-400" />
 
-      <div className="grid grid-cols-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-5 gap-3">
         {menus.map((menu) => (
           <div key={menu.id} className="bg-white p-2 rounded-md shadow-sm text-xs">
             <img

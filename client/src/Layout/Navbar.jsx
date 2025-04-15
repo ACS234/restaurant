@@ -1,43 +1,19 @@
-import React, { useState,useEffect } from 'react';
-import { IoMdPerson,IoIosContacts,IoMdLogIn  } from "react-icons/io";
+import React, { useState } from 'react';
+import { IoMdPerson, IoIosContacts, IoMdLogIn } from "react-icons/io";
 import { FaBars } from "react-icons/fa6";
 import { FaCartArrowDown } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import img from '../assets/img_1.jpg';
-import { getCart } from '../services/apiService';
-import { toast ,ToastContainer} from 'react-toastify';
+
 import { AiOutlineLogout } from "react-icons/ai";
 import { IoHome } from "react-icons/io5";
-import { MdRoundaboutRight,MdOutlineMenuBook } from "react-icons/md";
+import { MdRoundaboutRight, MdOutlineMenuBook } from "react-icons/md";
 import { LiaFirstOrderAlt } from "react-icons/lia";
 import { GiArchiveRegister } from "react-icons/gi";
 
 
-
-
-
-
-
-
 const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-      const [cartData, setCartData] = useState([]);
-  
-      useEffect(() => {
-          const fetchFoods = async () => {
-              try {
-                  const data = await getCart();
-                  console.log('Fetched navbar cart data:', data);
-                  setCartData(data);
-              } catch (error) {
-                  toast.error('Failed to load cart items.');
-                  console.error(error);
-              }
-          };
-  
-          fetchFoods();
-      }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -50,20 +26,19 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <img src={img} alt="Restaurant Logo" className="h-10 w-10 rounded-full" />
           <span className="ml-3 text-xl font-bold">Red Chillies</span>
         </div>
-        <ToastContainer/>
         <div className="md:hidden ml-4">
           <button onClick={toggleMobileMenu} className="hover:text-yellow-500">
             <FaBars size={25} />
           </button>
         </div>
 
-        <div className="hidden md:flex space-x-6">
+        <div className="hidden md:flex space-x-10">
           {isAuthenticated && (
             <>
-              <Link to="/" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoHome size={25}/></Link>
+              <Link to="/" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoHome size={25} /></Link>
               <Link to="/menu" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><MdOutlineMenuBook size={25} /></Link>
-              <Link to="/about" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><MdRoundaboutRight size={25}/></Link>
-              <Link to="/contact" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoIosContacts size={25}/></Link>
+              <Link to="/about" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><MdRoundaboutRight size={25} /></Link>
+              <Link to="/contact" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><IoIosContacts size={25} /></Link>
               <Link to="/foods" className="transform transition-transform duration-200 hover:scale-125 hover:text-green-600"><LiaFirstOrderAlt size={25} /></Link>
             </>
           )}
@@ -78,7 +53,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           ) : (
             <>
               <span className="text-sm">Hi, {loggedInUser?.username}</span>
-              <button onClick={handleLogout} className="transform transition-transform duration-200 hover:scale-125 hover:text-red-600"><AiOutlineLogout size={25}/></button>
+              <button onClick={handleLogout} className="transform transition-transform duration-200 hover:scale-125 hover:text-red-600"><AiOutlineLogout size={25} /></button>
             </>
           )}
         </div>
@@ -103,7 +78,7 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
           <div className="hidden md:flex items-center space-x-6 ml-4">
             <Link to="/cart" className="relative hover:text-yellow-500">
               <span className="absolute -top-2 -right-3 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
-                {cartData.length}
+                2
               </span>
               <FaCartArrowDown size={25} />
             </Link>
@@ -115,7 +90,6 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
         )}
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden px-4 pb-4 space-y-3">
           {isAuthenticated && (
@@ -125,7 +99,16 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
               <Link to="/about" className="block hover:text-yellow-500">About Us</Link>
               <Link to="/contact" className="block hover:text-yellow-500">Contact</Link>
               <Link to="/foods" className="block hover:text-yellow-500">Order Now</Link>
+              <Link to="/cart" className="relative hover:text-yellow-500">
+                <span className="absolute -top-2 mr-80 bg-green-600 text-xs text-white rounded-full w-5 h-5 flex items-center justify-center">
+                0
+                </span>
+                <FaCartArrowDown size={25} />
+              </Link>
 
+              <Link to="#profile" className="hover:text-yellow-500">
+                <IoMdPerson size={25} />
+              </Link>
               <div className="mt-4">
                 <span className="block mb-2">Hi, {loggedInUser?.username}</span>
                 <button onClick={handleLogout} className="hover:text-yellow-500">Logout</button>

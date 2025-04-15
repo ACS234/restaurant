@@ -20,10 +20,13 @@ const Login = () => {
       if (res?.access && res?.refresh) {
         sessionStorage.setItem(ACCESS_TOKEN, res.access);
         sessionStorage.setItem(REFRESH_TOKEN, res.refresh);
-        navigate('/');
+        toast.success('Login successful!');
+        setTimeout(()=>{
+          navigate('/');
+        },200)
       }
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.message || 'Login failed');
     } finally {
       setLoading(false);
     }

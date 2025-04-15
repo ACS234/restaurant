@@ -215,6 +215,8 @@ class MenuDetailAPIView(APIView):
     #     menu = get_object_or_404(Menu, pk=pk)
     #     menu.delete()
     #     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class TableAPIView(APIView):
     def get(self, request):
         try:
@@ -230,9 +232,10 @@ class CartItemCreateView(APIView):
 
     def get(self,request):
         try:
-            cart=CartItem.objects.select_related('food').all()
+            cart=CartItem.objects.select_related('food').filter(user=request.user)
+            total=cart.count()
             serializer=CartItemSerializer(cart,many=True)
-            return Response({"data":serializer.data},status=status.HTTP_200_OK)
+            return Response({"data":serializer.data,"total":total},status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
@@ -248,6 +251,20 @@ class CartItemCreateView(APIView):
         cart_item = CartItem.objects.create(food=food, quantity=quantity, user=request.user)
         
         return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+    
+class CartDetailAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            cart=CartItem.objects.get(pk=pk)
+            serializer = CartItemSerializer(cart)
+            return Response({"data":serializer.data},status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+    
+    def delete(self, request, pk):
+        cart = get_object_or_404(CartItem, pk=pk)
+        cart.delete()
+        return Response({"message":"Cart Item Delete Successfully"},status=status.HTTP_204_NO_CONTENT)
 
 
 class ReservationAPIView(APIView):

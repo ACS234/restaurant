@@ -201,9 +201,14 @@ const MenuDetail = () => {
     }
   };
 
+  const handleOrder=()=>{
+    toast.success("go to order page")
+    navigate('/order')
+  }
+
   return (
     <section className="py-12 px-4 bg-gray-100">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto mt-20">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">{menuItem.name}</h2>
 
         <img
@@ -226,6 +231,7 @@ const MenuDetail = () => {
 
               <div className="text-left space-y-1 mb-3">
                 <p className="text-sm truncate"><strong>Name:</strong> {item.name}</p>
+                <p className="text-sm truncate"><strong>Price:</strong>₹ {item.price}</p>
                 <p className="text-sm"><strong>Cuisine:</strong> {item.cuisine_type}</p>
                 <p className="text-sm flex items-center">
                   <strong>Type:</strong>
@@ -272,6 +278,7 @@ const MenuDetail = () => {
                   Add to Cart
                 </button>
                 <button
+                onClick={()=>{handleOrder()}}
                   className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
                 >
                   Order Now
