@@ -12,7 +12,6 @@ const FoodPage = () => {
     const fetchFoods = async () => {
         try {
             const data = await getFoods();
-            console.log('Fetched food data:', data);
             setFoods(data);
         } catch (error) {
             toast.error('Failed to load foods.',error.message);

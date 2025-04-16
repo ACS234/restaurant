@@ -166,10 +166,11 @@ class FoodDetailAPIView(APIView):
 
 # Menu API
 class MenuAPIView(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self, request):
         menus = Menu.objects.all()
         serializer = MenuSerializer(menus, many=True)
-        return Response({"message":"All Menus Data","data":serializer.data},status=status.HTTP_200_OK)
+        return Response(serializer.data,status=status.HTTP_200_OK)
     
     def post(self,request):
         serializer=MenuSerializer(data=request.data)
@@ -255,11 +256,19 @@ class CartItemCreateView(APIView):
 class CartDetailAPIView(APIView):
     def get(self, request, pk):
         try:
-            cart=CartItem.objects.get(pk=pk)
+            cart = get_object_or_404(CartItem, pk=pk)
             serializer = CartItemSerializer(cart)
             return Response({"data":serializer.data},status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+        
+    def patch(self, request, pk):
+        cart = get_object_or_404(CartItem, pk=pk)
+        serializer = CartItemSerializer(cart, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
         cart = get_object_or_404(CartItem, pk=pk)

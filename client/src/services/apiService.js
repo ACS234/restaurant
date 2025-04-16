@@ -25,6 +25,16 @@ const postData = async (url, data) => {
   }
 };
 
+const updateData = async (url, data) => {
+  try {
+    const response = await axiosInstance.patch(url, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating data:', error);
+    throw error;
+  }
+};
+
 const deleteData = async (url, config) => {
   try {
     const response = await axiosInstance.delete(url, config);
@@ -39,7 +49,6 @@ const deleteData = async (url, config) => {
 export const getFoods = async () => {
   try {
     const response = await getData(`/api/foods/`);
-    toast.success('Food data fetched successfully!');
     return response?.data;
   } catch (error) {
     toast.error('Failed to fetch foods!');
@@ -49,7 +58,9 @@ export const getFoods = async () => {
 
 export const getMenus = async () => {
   try {
-    return await getData(`/api/menus/`);
+    const response= await getData(`/api/menus/`);
+    console.log("reponse from service",response)
+    return response;
   } catch (error) {
     toast.error("Something went wrong");
     throw error;
@@ -58,7 +69,9 @@ export const getMenus = async () => {
 
 export const getMenuDetail = async (id) => {
   try {
-    return await getData(`/api/menus/${id}/`);
+    const response= await getData(`/api/menus/${id}/`);
+    console.log("menu detail",response)
+    return response?.data;
   } catch (error) {
     toast.error("Something went wrong");
     throw error;
@@ -87,7 +100,7 @@ export const getTable = async () => {
 
 export const getCart = async () => {
   try {
-    const response = await getData(`/api/cart/add/`);
+    const response = await getData(`/api/cart/`);
     return response?.data;
   } catch (error) {
     console.error('Error fetching cart:', error);
@@ -119,6 +132,17 @@ export const removeCart = async (id) => {
     throw error;
   }
 };
+
+export const updateCart=async(id,data)=>{
+  try {
+    const response=await updateData(`/api/cart/${id}/update/`,data);
+    console.log("Updated Cart",response)
+    return response?.data;
+  } catch (error) {
+    toast.error("Error while Updating",error);
+    throw error;
+  }
+}
 
 export const bookTable = async (data) => {
   try {

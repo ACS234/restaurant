@@ -15,6 +15,11 @@ const CheckoutPage = () => {
   // });
   const [totalAmount, setTotalAmount] = useState(0);
   const navigate = useNavigate();
+  // const location = useLocation();
+  // const cartData = location.state?.cartData || [];
+
+  // const totalPrice = cartData.reduce((sum, item) => sum + item.food.price * item.quantity, 0);
+
 
   useEffect(() => {
     const fetchCartData = async () => {

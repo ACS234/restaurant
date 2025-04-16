@@ -65,6 +65,12 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'food', 'quantity', 'total_price']
 
+    def update(self, instance, validated_data):
+        quantity = validated_data.get('quantity', instance.quantity)
+        instance.quantity = quantity
+        instance.save()
+        return instance
+
     def get_total_price(self, obj):
         return obj.food.price * obj.quantity
 
