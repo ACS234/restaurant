@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { getMenus } from '../services/apiService';
 import 'react-toastify/dist/ReactToastify.css';
-import { useParams,useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const MenuSection = () => {
-  const {id}=useParams()
   const [menus, setMenus] = useState([]);
   const [selectedMenuId, setSelectedMenuId] = useState(null);
   const navigate=useNavigate()
@@ -54,7 +53,6 @@ const MenuSection = () => {
               className="w-32 h-32 mx-auto flex flex-col items-center justify-center rounded-full bg-white shadow-lg text-xs cursor-pointer transition-all hover:shadow-xl overflow-hidden relative"
               onClick={() => handleMenuClick(menu.id)}
             >
-
               <img
                 src={`http://localhost:8000/${menu.image}`}
                 alt={menu.name}

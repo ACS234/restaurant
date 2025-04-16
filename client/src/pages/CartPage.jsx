@@ -20,44 +20,27 @@ const AddToCart = () => {
     }
   };
 
-
   console.log(cartData)
 
-//   const handleUpdatedCart = async(id)=>{
-//       console.log("id",id)
-//       const ressponse = await updateCart(id);
-//       if(Response){
-//         setCartData(ressponse)
-//       }  
-//  }
   useEffect(() => {
     fetchCarts();
   }, []);
 
-
-
-
-
-    
   const handleQuantityChange = async (itemId, delta) => {
-    const itemToUpdate = cartData.find(item => item.id === itemId);
-    if (!itemToUpdate) return;
+    const item = cartData.find((item) => item.id === itemId);
+    if (!item) return;
   
-    const newQuantity = Math.max(1, itemToUpdate.quantity + delta);
-  
+    const newQuantity = Math.max(1, item.quantity + delta);
     try {
-      const updatedItem = await updateCart(itemId, { quantity: newQuantity });
-      setCartData((prevCart) =>
-        prevCart.map((item) =>
-          item.id === itemId ? { ...item, quantity: updatedItem?.quantity } : item
-        )
-      );
+      await updateCart(itemId, { quantity: newQuantity });
+      fetchCarts();
     } catch (error) {
       toast.error('Failed to update quantity.');
-      console.error(error);
+      console.error('Quantity update error:', error);
     }
   };
   
+
   const removeCartItem = async (id) => {
     try {
       await removeCart(id);

@@ -1,153 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { getCart } from '../services/apiService';
-import { toast, ToastContainer } from 'react-toastify';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { RiSecurePaymentFill } from "react-icons/ri";
-import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 
 const CheckoutPage = () => {
-  const [cartData, setCartData] = useState([]);
-  // const [shippingDetails, setShippingDetails] = useState({
-  //   name: '',
-  //   address: '',
-  //   city: '',
-  //   zip: '',
-  //   phone: '',
-  // });
-  const [totalAmount, setTotalAmount] = useState(0);
+  const location = useLocation();
   const navigate = useNavigate();
-  // const location = useLocation();
-  // const cartData = location.state?.cartData || [];
+  const cartData = location.state?.cartData || [];
 
-  // const totalPrice = cartData.reduce((sum, item) => sum + item.food.price * item.quantity, 0);
-
-
-  useEffect(() => {
-    const fetchCartData = async () => {
-      try {
-        const data = await getCart();
-        setCartData(data);
-
-        const total = data.reduce((acc, item) => acc + item.food.price * item.quantity, 0);
-        setTotalAmount(total);
-      } catch (error) {
-        toast.error('Failed to load cart data.',error);
-      }
-    };
-
-    fetchCartData();
-  }, []);
-
-  // const handleShippingDetailsChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setShippingDetails((prevDetails) => ({
-  //     ...prevDetails,
-  //     [name]: value,
-  //   }));
-  // };
+  const totalAmount = cartData.reduce((sum, item) => sum + item.food.price * item.quantity, 0);
 
   const handlePlaceOrder = () => {
-    // const { name, address, city, zip, phone } = shippingDetails;
+    if (!cartData.length) {
+      toast.error('Your cart is empty.');
+      return;
+    }
 
-    // if (!name || !address || !city || !zip || !phone) {
-    //   toast.error('Please fill in all the shipping details.');
-    //   return;
-    // }
-    
-    toast.success('Order placed successfully!');
-    navigate('/payment',{
-      state: { totalAmount, cartData }
-    });
+    navigate('/payment', { state: { cartData, totalAmount } });
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F5F2] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-7xl bg-white p-6 md:p-10 rounded-xl shadow-2xl mt-20">
+    <div className="min-h-screen bg-[#F8F5F2] flex flex-col items-center p-4">
+      <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-2xl mt-20">
         <h2 className="text-4xl font-extrabold text-center text-[#3B2F2F] mb-8">Checkout</h2>
-        {/* <div className="mb-10">
-          <h3 className="text-2xl font-semibold text-[#A47148] mb-6">Shipping Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input
-              type="text"
-              name="name"
-              value={shippingDetails.name}
-              onChange={handleShippingDetailsChange}
-              placeholder="Full Name"
-              className="p-3 rounded-md border border-[#D6CFC7] w-full bg-[#FAF9F7] placeholder:text-gray-500"
-            />
-            <input
-              type="text"
-              name="address"
-              value={shippingDetails.address}
-              onChange={handleShippingDetailsChange}
-              placeholder="Address"
-              className="p-3 rounded-md border border-[#D6CFC7] w-full bg-[#FAF9F7]"
-            />
-            <input
-              type="text"
-              name="city"
-              value={shippingDetails.city}
-              onChange={handleShippingDetailsChange}
-              placeholder="City"
-              className="p-3 rounded-md border border-[#D6CFC7] w-full bg-[#FAF9F7]"
-            />
-            <input
-              type="text"
-              name="zip"
-              value={shippingDetails.zip}
-              onChange={handleShippingDetailsChange}
-              placeholder="ZIP Code"
-              className="p-3 rounded-md border border-[#D6CFC7] w-full bg-[#FAF9F7]"
-            />
-            <input
-              type="text"
-              name="phone"
-              value={shippingDetails.phone}
-              onChange={handleShippingDetailsChange}
-              placeholder="Phone Number"
-              className="p-3 rounded-md border border-[#D6CFC7] w-full bg-[#FAF9F7] md:col-span-2"
-            />
-          </div>
-        </div> */}
+
         <div className="mb-10">
-          <h3 className="text-2xl font-semibold text-[#A47148] mb-6">Cart Summary</h3>
+          <h3 className="text-2xl font-semibold mb-6">Cart Summary</h3>
           <div className="space-y-4">
-            {cartData.length > 0 ? (
-              cartData.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col md:flex-row md:justify-between md:items-center bg-[#FFF7EF] p-4 rounded-lg shadow-md"
-                >
-                  <div className="flex items-center gap-4 mb-2 md:mb-0">
-                    <img
-                      src={`http://localhost:8000${item.food.image}`}
-                      alt={item.food.name}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
-                    <span className="text-md font-semibold text-[#3B2F2F]">{item.food.name}</span>
-                  </div>
-                  <span className="text-sm font-medium text-[#3B2F2F]">
-                    ₹{item.food.price} x {item.quantity} = ₹{item.food.price * item.quantity}
-                  </span>
+            {cartData.map((item) => (
+              <div key={item.id} className="flex justify-between items-center bg-[#FFF7EF] p-4 rounded-lg shadow">
+                <div className="flex gap-4 items-center">
+                  <img src={`http://localhost:8000${item.food.image}`} className="w-16 h-16 object-cover rounded" />
+                  <span>{item.food.name}</span>
                 </div>
-              ))
-            ) : (
-              <div className="text-center text-gray-700">Your cart is empty.</div>
-            )}
+                <span>₹{item.food.price} × {item.quantity} = ₹{item?.total_price}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="flex flex-col md:flex-row justify-between items-center mt-8 border-t pt-6 gap-4">
+
+        <div className="flex justify-between items-center border-t pt-6">
           <div className="text-2xl font-bold text-[#3B2F2F]">Total: ₹{totalAmount}</div>
-          <button
-            onClick={handlePlaceOrder}
-            className="flex items-center gap-2 py-3 px-6 bg-[#D9A066] text-white text-lg rounded-lg hover:bg-[#c28d4c] transition duration-300"
-          >
-            <RiSecurePaymentFill size={22} />
-            Place Order
+          <button onClick={handlePlaceOrder} className="bg-[#D9A066] text-white px-6 py-3 rounded-lg hover:bg-[#c28d4c] flex items-center gap-2">
+            <RiSecurePaymentFill /> Place Order
           </button>
         </div>
       </div>
-
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer />
     </div>
   );
 };

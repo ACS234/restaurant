@@ -22,65 +22,46 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
 
 # Search API for Food And Menu
-
 class SearchFoodAPIView(generics.ListAPIView):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name','category', 'is_vegetarian']
         
-
-
 #  Restaurant API
 class RestaurantAPIView(APIView):
     def get(self, request):
         restaurants = Restaurant.objects.all()
         serializer = RestaurantSerializer(restaurants, many=True)
         return Response(serializer.data)
-
-    # def post(self, request):
-    #     serializer = RestaurantSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def post(self, request, *args, **kwargs):
-        # Get the data from the request
         name = request.data.get('name')
         location = request.data.get('location')
         contact_number = request.data.get('contact_number')
         
-        # Check if restaurant with the same name already exists
         if Restaurant.objects.filter(name=name).exists():
             return Response({"error": "A restaurant with this name already exists."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create the restaurant
         restaurant = Restaurant.objects.create(
             name=name,
             location=location,
             contact_number=contact_number
         )
         
-        # Generate the QR code
         qr = qrcode.make(f"Restaurant Menu: {restaurant.name}")
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
         
-        # Save the QR code to the restaurant model
         restaurant.qr_code.save(f"qr_{restaurant.id}.png", ContentFile(buffer.getvalue()), save=False)
-        restaurant.save()  # Save again with the QR code
+        restaurant.save() 
 
-        # Serialize the response data
         serializer = RestaurantSerializer(restaurant)
-
-        # Return the response with the restaurant data and QR code URL
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-
-
 
 class RestaurantQRAPIView(APIView):
     def get(self, request, pk):
@@ -89,14 +70,11 @@ class RestaurantQRAPIView(APIView):
     
 class GenerateQRCodeAPIView(APIView):
     def get(self, request, restaurant_id, table_id):
-        # Get the table instance based on the provided restaurant_id and table_id
         table = Table.objects.get(id=table_id, restaurant_id=restaurant_id)
         qr_url = table.get_qr_code_url()
 
-        # Generate the QR code
         qr_code = qrcode.make(qr_url)
 
-        # Create an HTTP response and return the QR code image
         response = HttpResponse(content_type="image/png")
         qr_code.save(response, "PNG")
         return response
@@ -119,25 +97,20 @@ class FoodAPIView(APIView):
                 resized_img = img_file.resize((300, 300))
 
                 img_io = BytesIO()
-
-                # Save the resized image in JPEG format
-                resized_img.save(img_io, format='JPEG')  # Saving in JPEG format
+                resized_img.save(img_io, format='JPEG') 
                 img_io.seek(0)
 
-                # Create the InMemoryUploadedFile with JPEG format
                 resized_image = InMemoryUploadedFile(
                     img_io, 
                     None, 
-                    'resized_img.jpg',  # Filename with .jpg extension
-                    'image/jpeg',  # MIME type for JPEG
+                    'resized_img.jpg', 
+                    'image/jpeg', 
                     img_io.getbuffer().nbytes, 
                     None
                 )
                 
-                # Add the resized image to the data dictionary
                 data['image'] = resized_image
 
-        # Proceed with serializer validation and saving
         serializer = FoodSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -182,21 +155,17 @@ class MenuAPIView(APIView):
 # for qr code
 class MenusAPIView(APIView):
     def get(self, request, restaurant_id, table_id):
-        # Fetch the restaurant and table to check if they exist
         restaurant = Restaurant.objects.get(id=restaurant_id)
         table = Table.objects.get(id=table_id, restaurant=restaurant)
 
-        # Fetch the menu items for that restaurant
         menu_items = restaurant.menus.all()
 
-        # Serialize the menu items
         serializer = MenuSerializer(menu_items, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MenuDetailAPIView(APIView):
     def get(self, request, pk):
-        # menu = get_object_or_404(Menu, pk=pk)
         try:
             menu=Menu.objects.prefetch_related('foods').get(pk=pk)
             serializer = MenuSerializer(menu)
@@ -212,12 +181,6 @@ class MenuDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def delete(self, request, pk):
-    #     menu = get_object_or_404(Menu, pk=pk)
-    #     menu.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 class TableAPIView(APIView):
     def get(self, request):
         try:
@@ -227,54 +190,55 @@ class TableAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class CartItemCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self,request):
-        try:
-            cart=CartItem.objects.select_related('food').filter(user=request.user)
-            total=cart.count()
-            serializer=CartItemSerializer(cart,many=True)
-            return Response({"data":serializer.data,"total":total},status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    def post(self, request, format=None):
-        food_id = request.data.get('food')  
-        quantity = request.data.get('quantity', 1) 
-        
-        try:
-            food = Food.objects.get(id=food_id)
-        except Food.DoesNotExist:
-            return Response({"error": "Food item not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+    def get(self, request):
+        cart_items = CartItem.objects.filter(user=request.user).select_related('food')
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response({"data": serializer.data, "total": cart_items.count()}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        food_id = request.data.get('food')
+        quantity = request.data.get('quantity', 1)
+
+        food = get_object_or_404(Food, id=food_id)
+
         cart_item = CartItem.objects.create(food=food, quantity=quantity, user=request.user)
-        
         return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
-    
+
+    def put(self, request, item_id):
+        cart_item = get_object_or_404(CartItem, id=item_id, user=request.user)
+        cart_item.quantity = request.data.get('quantity', cart_item.quantity)
+        cart_item.save()
+        return Response({"message": "Cart updated successfully"}, status=status.HTTP_200_OK)
+
+    def delete(self, request, item_id):
+        cart_item = get_object_or_404(CartItem, id=item_id, user=request.user)
+        cart_item.delete()
+        return Response({"message": "Item removed from cart"}, status=status.HTTP_204_NO_CONTENT)
+
+
 class CartDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
-        try:
-            cart = get_object_or_404(CartItem, pk=pk)
-            serializer = CartItemSerializer(cart)
-            return Response({"data":serializer.data},status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
-            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
-        
+        cart_item = get_object_or_404(CartItem, id=pk, user=request.user)
+        serializer = CartItemSerializer(cart_item)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
     def patch(self, request, pk):
-        cart = get_object_or_404(CartItem, pk=pk)
-        serializer = CartItemSerializer(cart, data=request.data, partial=True)
+        cart_item = get_object_or_404(CartItem, id=pk, user=request.user)
+        serializer = CartItemSerializer(cart_item, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        cart = get_object_or_404(CartItem, pk=pk)
-        cart.delete()
-        return Response({"message":"Cart Item Delete Successfully"},status=status.HTTP_204_NO_CONTENT)
 
+    def delete(self, request, pk):
+        cart_item = get_object_or_404(CartItem, id=pk, user=request.user)
+        cart_item.delete()
+        return Response({"message": "Cart Item Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 class ReservationAPIView(APIView):
     def get(self,request):
@@ -310,29 +274,50 @@ class ReservationAPIView(APIView):
             return Response({'message': 'Booking submitted!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# Order API
+#Order API
 class OrderAPIView(APIView):
     def get(self, request):
-        orders = Order.objects.all()
+        orders = Order.objects.filter(user=request.user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = OrderSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        user = request.user
+        cart_items = CartItem.objects.filter(user=user)
+        
+        if not cart_items.exists():
+            return Response({'error': 'No items in cart'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        total_price = sum(item.food.price * item.quantity for item in cart_items)
+
+        order_data = {
+            'user': user,
+            'total_price': total_price,
+        }
+        order = Order.objects.create(**order_data)
+        
+        for item in cart_items:
+            order.items.create(food=item.food, quantity=item.quantity)
+        
+        # Empty the cart after placing the order
+        cart_items.delete()
+
+        return Response({'message': 'Order placed successfully', 'order_id': order.id}, status=status.HTTP_201_CREATED)
+
+
 class OrderDetailAPIView(APIView):
     def get(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
+        if order.user != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         serializer = OrderSerializer(order)
         return Response(serializer.data)
 
     def patch(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
+        if order.user != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        
         serializer = OrderSerializer(order, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -364,11 +349,23 @@ class OrderItemAPIView(APIView):
             if not quantity:
                 return Response({"detail": "Quantity is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Save the order item directly; total_price is calculated dynamically in the model/serializer
             order_item = serializer.save()
             return Response(OrderItemSerializer(order_item).data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        order_item = get_object_or_404(OrderItem, pk=pk)
+        serializer = OrderItemSerializer(order_item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        order_item = get_object_or_404(OrderItem, pk=pk)
+        order_item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # Order Status API
@@ -383,74 +380,172 @@ class OrderStatusAPIView(APIView):
         order.save()
         return Response({"message": "Order status updated", "status": order.status})
 
-# Payment API
-# class PaymentAPIView(APIView):
-#     def post(self, request):
-#         data = request.data
-#         data["is_paid"] = True  # Set is_paid to True for new payments
-        
-#         serializer = PaymentSerializer(data=data)
-#         if serializer.is_valid():
-#             order = serializer.validated_data.get('order')
-#             # Ensure order is not already paid
-#             if Payment.objects.filter(order=order).exists():
-#                 return Response({"error": "Payment already exists"}, status=status.HTTP_400_BAD_REQUEST)
-            
-#             payment = serializer.save()
-#             return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+# # Payment API
 class PaymentAPIView(APIView):
-    
-    def get(self,request):
-        payments = Payment.objects.all()
-        serializer = PaymentSerializer(payments, many=True)
-        return Response(serializer.data)
-    
     def post(self, request):
         data = request.data
-        payment_method = data.get("payment_method")
-        order = data.get("order")
+        user = request.user
+        items = data.get('order', [])
+        amount = data.get('amount')
+        payment_method = data.get('payment_method')
+        restaurant_id = data.get('restaurant_id')
+        customer_name = data.get('customer_name')
+        customer_contact = data.get('customer_contact')
 
-        if Payment.objects.filter(order=order).exists():
-            return Response({"error": "Payment already exists"}, status=400)
+        if not items or not amount or not payment_method or not restaurant_id:
+            return Response(
+                {"success": False, "error": "Missing required payment information."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if payment_method == "Stripe":
-            payment_intent_id = data.get("payment_intent_id")
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+        except Restaurant.DoesNotExist:
+            return Response(
+                {"success": False, "error": "Restaurant not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-            if not payment_intent_id:
-                return Response({"error": "Missing payment_intent_id"}, status=400)
-            try:
-                intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+        valid_methods = ['Cash', 'Credit Card', 'UPI', 'Wallet']
+        if payment_method not in valid_methods:
+            return Response(
+                {"success": False, "error": "Invalid payment method."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        
 
-                if intent.status != "succeeded":
-                    return Response({"error": "Payment not completed"}, status=400)
+        try:
+            # Check if a similar unpaid order already exists
+            if not customer_contact or not customer_name:
+                return Response(
+                    {"success": False, "error": "Missing customer information."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            existing_order = Order.objects.filter(
+                restaurant=restaurant,
+                user=user,# use it when User model Inherits
+                customer_name=customer_name,
+                customer_contact=customer_contact,
+                status='Pending',
+                items__food__in=[item['id'] for item in items]
+            ).distinct().first()
 
-                data["amount"] = intent.amount / 100
-                data["currency"] = intent.currency
-                data["stripe_id"] = intent.id
-                data["is_paid"] = True
-                data["payment_method"] = intent.payment_method
+            if existing_order:
+                existing_payment = Payment.objects.filter(order=existing_order).first()
+                if existing_payment and existing_payment.is_paid:
+                    return Response(
+                        {"success": False, "error": "This order has already been paid."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            except stripe.error.StripeError as e:
-                return Response({"error": str(e)}, status=500)
+            with transaction.atomic():
+                order = Order.objects.create(
+                    restaurant=restaurant,
+                    user=user,
+                    status='Pending'
+                )
 
-        elif payment_method in ["Cash", "UPI", "Bank Transfer"]:
-            if not data.get("amount"):
-                return Response({"error": "Amount is required for non-Stripe payments"}, status=400)
+                for item in items:
+                    food_id = item.get('id')
+                    quantity = item.get('quantity')
 
-            data["is_paid"] = True
-            data["stripe_id"] = None 
-            data["currency"] = data.get("currency", "INR") 
+                    try:
+                        food = Food.objects.get(id=food_id)
+                    except Food.DoesNotExist:
+                        return Response(
+                            {"success": False, "error": f"Food item with id {food_id} not found."},
+                            status=status.HTTP_404_NOT_FOUND
+                        )
 
-        else:
-            return Response({"error": "Unsupported payment method"}, status=400)
-        serializer = PaymentSerializer(data=data)
-        if serializer.is_valid():
-            payment = serializer.save()
-            return Response(PaymentSerializer(payment).data, status=201)
+                    OrderItem.objects.create(
+                        order=order,
+                        food=food,
+                        quantity=quantity
+                    )
 
-        return Response(serializer.errors, status=400)
+                payment = Payment.objects.create(
+                    order=order,
+                    amount=amount,
+                    payment_method=payment_method,
+                    is_paid=False
+                )
+
+                # Clear user's cart after initiating payment
+                CartItem.objects.filter(user=user).delete() #use it when User Model Inheirts in models.py
+                CartItem.objects.filter(customer_contact=customer_contact).delete()
+
+                return Response(
+                    {
+                        "success": True,
+                        "order_id": order.id,
+                        "payment_id": payment.id,
+                        "message": "Order and payment initiated successfully."
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+
+        except Exception as e:
+            return Response(
+                {"success": False, "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+# class PaymentAPIView(APIView):
+#     permission_classes=[IsAuthenticated]
+
+#     def get(self, request):
+#         payments = Payment.objects.all()
+#         serializer = PaymentSerializer(payments, many=True)
+#         return Response(serializer.data)
+
+#     def post(self, request):
+#         data = request.data
+#         payment_method = data.get("payment_method")
+#         items = data.get("order",[])
+
+#         if Payment.objects.filter(order=items).exists():
+#             return Response({"error": "Payment already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         if payment_method == "Stripe":
+#             payment_intent_id = data.get("payment_intent_id")
+            
+#             if not payment_intent_id:
+#                 return Response({"error": "Missing payment_intent_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+#             try:
+#                 intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+
+#                 if intent.status != "succeeded":
+#                     return Response({"error": "Payment not completed"}, status=status.HTTP_400_BAD_REQUEST)
+
+#                 data["amount"] = intent.amount / 100  
+#                 data["currency"] = intent.currency
+#                 data["stripe_id"] = intent.id
+#                 data["is_paid"] = True
+#                 data["payment_method"] = intent.payment_method
+
+#             except stripe.error.StripeError as e:
+#                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#         elif payment_method in ["Cash", "UPI", "Bank Transfer"]:
+#             if not data.get("amount"):
+#                 return Response({"error": "Amount is required for non-Stripe payments"}, status=status.HTTP_400_BAD_REQUEST)
+
+#             data["is_paid"] = True
+#             data["stripe_id"] = None  
+#             data["currency"] = data.get("currency", "INR") 
+
+#         else:
+#             return Response({"error": "Unsupported payment method"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         serializer = PaymentSerializer(data=data)
+#         if serializer.is_valid():
+#             payment = serializer.save()
+#             return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #  Receipt API (PDF Generation)
 class GenerateReceiptAPIView(APIView):
@@ -483,53 +578,24 @@ class GenerateReceiptAPIView(APIView):
 
         return render(request, "api/receipt.html", context)
     
-    # def get(self, request, order_id):
-    #     order = get_object_or_404(Order, pk=order_id)
-    #     items = order.items.all()
-
-    #     items_data = []
-    #     total = 0
-
-    #     for item in items:
-    #         item_data = {
-    #             "name": item.id,
-    #             "quantity": item.quantity,
-    #             "unit_price": item.food.price,
-    #             "subtotal": item.quantity * item.food.price,
-    #         }
-    #         items_data.append(item_data)
-    #         total += item_data["subtotal"]
-
-    #     receipt_data = {
-    #         "order_id": order.id,
-    #         "customer_name": order.restaurant.name,
-    #         "date": order.created_at.strftime('%Y-%m-%d %H:%M'),
-    #         "items": items_data,
-    #         "total": total,
-    #     }
-
-    #     return Response(receipt_data)
     def post(self, request, order_id):
         order = get_object_or_404(Order, pk=order_id)
         html_content = render_to_string("api/receipt.html")
 
-        # Check if receipt already exists
         if Receipt.objects.filter(order=order).exists():
             receipt = Receipt.objects.get(order=order)
             return FileResponse(open(receipt.pdf_file.path, "rb"), content_type="application/pdf")
 
-        # Generate PDF
         try:
             pdf_file_path = os.path.join(settings.MEDIA_ROOT, f"receipts/order_{order_id}.pdf")
             pdfkit.from_string(html_content, pdf_file_path)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-        # Save receipt in database
         receipt = Receipt.objects.create(order=order, pdf_file=f"receipts/order_{order_id}.pdf")
 
         return FileResponse(open(pdf_file_path, "rb"), content_type="application/pdf")
-
+    
 # Review API
 class ReviewAPIView(APIView):
     def get(self, request):
@@ -543,16 +609,3 @@ class ReviewAPIView(APIView):
             serializer.save()
             return Response({"message":"Review complete successfully","data":serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Inventory API (Track Ingredients)
-class InventoryAPIView(APIView):
-    def get(self, request):
-        foods = Food.objects.all()
-        inventory = {food.name: food.stock_quantity for food in foods}
-        return Response(inventory)
-
-    def patch(self, request):
-        food = get_object_or_404(Food, id=request.data.get("food_id"))
-        food.stock_quantity = request.data.get("stock_quantity", food.stock_quantity)
-        food.save()
-        return Response({"message": "Inventory updated", "food": food.name, "stock": food.stock_quantity})

@@ -103,8 +103,6 @@ class Order(models.Model):
         return f"Order #{self.id} - {self.customer_name}"
     
     
-    
-    
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
     food = models.ForeignKey('Food', on_delete=models.CASCADE,related_name="order_items")

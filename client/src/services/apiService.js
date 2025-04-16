@@ -89,9 +89,7 @@ export const getFood = async (id) => {
 
 export const getTable = async () => {
   try {
-    const response = await getData(`/api/get_table/`);
-    console.log("Data from apiService", response);
-    return response;
+    return await getData(`/api/get_table/`);
   } catch (error) {
     console.error('Something went wrong', error);
     throw error;
@@ -108,10 +106,20 @@ export const getCart = async () => {
   }
 };
 
+export const getRestaurant = async () => {
+  try {
+    const response = await getData(`/api/restaurants/`);
+    return response;
+  } catch (error) {
+    console.error('Error fetching restaurants:', error);
+    throw error;
+  }
+};
+
 
 export const fetchQRData = async () => {
     const res = await axios.get(`${apiUrl}/qr/`);
-    return res.data; // expect { restaurantId, tableId }
+    return res.data; 
   };
 
 
@@ -153,6 +161,16 @@ export const bookTable = async (data) => {
   }
 };
 
+// Payment
+export const orderPayment = async (data) => {
+  try {
+    const response=await postData(`/api/payments/`, data);
+    return response;
+  } catch (error) {
+    console.error('Payment error:', error);
+    toast.error("Something went wrong.");
+  }
+};
 // AUTH
 
 const registerData = async (url, data) => {
