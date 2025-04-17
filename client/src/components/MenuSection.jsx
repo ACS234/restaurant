@@ -3,6 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { getMenus } from '../services/apiService';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import FoodPage from '../pages/FoodPage'
 
 const MenuSection = () => {
   const [menus, setMenus] = useState([]);
@@ -21,6 +22,8 @@ const MenuSection = () => {
     };
     getData();
   }, []);
+
+  
 
   const handleMenuClick = (id) => {
     if (!id) {
@@ -41,6 +44,7 @@ const MenuSection = () => {
   const selectedMenu = menus.find((menu) => menu.id === selectedMenuId);
 
   return (
+    <>
     <section className="py-8 px-2 bg-gray-100 text-center">
       <ToastContainer />
       <div className='mt-20'>
@@ -88,6 +92,8 @@ const MenuSection = () => {
       )}
       </div>
     </section>
+    <FoodPage/>
+    </>
   );
 };
 

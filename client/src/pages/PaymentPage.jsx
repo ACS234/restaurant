@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { getRestaurant, orderPayment } from '../services/apiService';
 
-const PaymentPage = () => {
-  const location = useLocation();
+const PaymentPage = ({ cartData, totalAmount }) => {
   const navigate = useNavigate();
-  const { cartData, totalAmount } = location.state || {};
   const [restaurantId, setRestaurantId] = useState(null)
 
   const [selectedMethod, setSelectedMethod] = useState('Credit Card');
@@ -21,7 +19,6 @@ const PaymentPage = () => {
       console.error(error);
     }
   };
-  console.log(restaurantId?.id)
 
   useEffect(() => {
     fetchRestaurants();
@@ -54,44 +51,41 @@ const PaymentPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Error processing payment.', error);
+      toast.error(error);
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F5F2] flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl p-8 w-full max-w-3xl shadow-xl mt-20">
-        <h2 className="text-3xl font-bold text-center mb-6">Payment</h2>
+    <div className="flex flex-col items-center p-4 bg-white rounded-xl w-full max-w-3xl shadow-xl">
+      <h2 className="text-3xl font-bold text-center mb-6">Payment</h2>
 
-        <div className="text-center text-xl mb-6 text-[#3B2F2F]">
-          Total Amount: <span className="font-semibold text-[#A47148]">₹{totalAmount}</span>
-        </div>
-
-        <div className="mb-6">
-          <label className="block mb-2 font-medium text-[#3B2F2F]">Select Payment Method</label>
-          <select
-            value={selectedMethod}
-            onChange={(e) => setSelectedMethod(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md bg-[#FAF9F7]"
-          >
-            <option value="Credit Card">Credit Card</option>
-            <option value="UPI">UPI</option>
-            <option value="Cash">Cash</option>
-            <option value="Wallet">Wallet</option>
-          </select>
-        </div>
-
-        <button
-          onClick={handlePayment}
-          disabled={isProcessing}
-          className="w-full py-3 bg-[#D9A066] text-white text-lg rounded-lg hover:bg-[#c28d4c] transition duration-300"
-        >
-          {isProcessing ? 'Processing...' : `Pay ₹${totalAmount}`}
-        </button>
+      <div className="text-center text-xl mb-6 text-[#3B2F2F]">
+        Total Amount: <span className="font-semibold text-[#A47148]">₹{totalAmount}</span>
       </div>
 
+      <div className="mb-6">
+        <label className="block mb-2 font-medium text-[#3B2F2F]">Select Payment Method</label>
+        <select
+          value={selectedMethod}
+          onChange={(e) => setSelectedMethod(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-md bg-[#FAF9F7]"
+        >
+          <option value="Credit Card">Credit Card</option>
+          <option value="UPI">UPI</option>
+          <option value="Cash">Cash</option>
+          <option value="Wallet">Wallet</option>
+        </select>
+      </div>
+
+      <button
+        onClick={handlePayment}
+        disabled={isProcessing}
+        className="w-full py-3 bg-[#D9A066] text-white text-lg rounded-lg hover:bg-[#c28d4c] transition duration-300"
+      >
+        {isProcessing ? 'Processing...' : `Pay ₹${totalAmount}`}
+      </button>
       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );

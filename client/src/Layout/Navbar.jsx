@@ -21,7 +21,6 @@ const Navbar = ({ isAuthenticated, loggedInUser, handleLogout }) => {
     const cartFromStorage = JSON.parse(sessionStorage.getItem('cart')) || [];
     setCurrentCartCount(cartFromStorage.length);  
     const storedUser = JSON.parse(sessionStorage.getItem('user')) || null;
-    console.log("stored data",storedUser)
     if (storedUser && storedUser.username) {
       setCurrentUsername(storedUser.username);  
     }

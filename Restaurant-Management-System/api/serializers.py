@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from authapp.serializers import UserSerializer
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,30 +8,47 @@ class RestaurantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+class MenuSerializer(serializers.ModelSerializer):
+    foods = serializers.SerializerMethodField()
+    restaurant = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Menu
+        fields = ['id', 'name', 'restaurant', 'foods', 'category', 'description', 'image', 'is_active']
+
+    def get_restaurant(self, obj):
+        return {
+            'id': obj.restaurant.id,
+            'name': obj.restaurant.name
+        }
+
+    def get_foods(self, obj):
+        return obj.foods.all().values()
+
+
+# 3. Food Serializer
 class FoodSerializer(serializers.ModelSerializer):
-    # menu=MenuSerializer(many=true)
-    # menu = serializers.StringRelatedField(many=True)
-    # menu=serializers.SerializerMethodField()
-    menu = 'MenuSerializer'
+    menus = serializers.SerializerMethodField()
+    restaurants = serializers.SerializerMethodField()
+
     class Meta:
         model = Food
         fields = '__all__'
-        # exclude = ['menu']
 
-    def get_menu(self, obj):
-        return MenuSerializer(obj.menu_set.all(), many=True).data
+    def get_menus(self, obj):
+        return list(obj.menus.values('id', 'name', 'category', 'description', 'image', 'is_active'))
 
-        
-class MenuSerializer(serializers.ModelSerializer):
-    # foods = serializers.PrimaryKeyRelatedField(queryset=Food.objects.all(), many=True)
-    foods = FoodSerializer(many=True, read_only=True)
-    class Meta:
-        model = Menu
-        fields = ['id','name',"restaurant",'foods','category','description','image','is_active']
-        # exclude=['foods',]
+    def get_restaurants(self, obj):
+        restaurants = {menu.restaurant for menu in obj.menus.all()}
+        return [
+            {'id': r.id, 'name': r.name}
+            for r in restaurants
+        ]
+
+
 
 class ReservationSerializer(serializers.ModelSerializer):
-    # tables='TableSerializer'
     class Meta:
         model=Reservation
         fields='__all__'
@@ -86,7 +104,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PaymentSerializer(serializers.ModelSerializer):
-    
+    user=UserSerializer()
     class Meta:
         model = Payment
         fields = '__all__'

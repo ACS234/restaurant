@@ -32,7 +32,7 @@ class Menu(models.Model):
         return f"{self.name} Menu - {self.restaurant.name}"
 
 class Food(models.Model):
-    menu = models.ManyToManyField(Menu, related_name="foods")
+    menus = models.ManyToManyField(Menu, related_name="foods")
     name = models.CharField(max_length=255,null=True,blank=True)
     description = models.TextField(null=True,blank=True)
     ingredients = models.TextField(null=True,blank=True)
@@ -92,7 +92,7 @@ class Order(models.Model):
         ('Cancelled', 'Cancelled'),
     ]
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE,default=None)
-    customer_name = models.CharField(max_length=255,null=True, blank=True)
+    customer_name = models.CharField(settings.AUTH_USER_MODEL,max_length=255,null=True, blank=True)
     customer_contact = models.CharField(max_length=15,null=True, blank=True)
     food_items = models.ManyToManyField(Food, through='OrderItem',default=None,related_name="orders") 
     delivery_address = models.TextField(null=True, blank=True)
@@ -123,6 +123,7 @@ class Payment(models.Model):
         ('UPI', 'UPI'),
         ('Wallet', 'Wallet')
     ]
+    user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_payment',null=True,blank=True)
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="payment")
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD,default='Cash')
@@ -132,7 +133,7 @@ class Payment(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Payment for Order {self.order.id} - {'Paid' if self.is_paid else 'Pending'} {self.amount}"
+        return f"Payment for Order {self.order.id} by {self.user} - {'Paid' if self.is_paid else 'Pending'} {self.amount}"
 
 class Receipt(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="receipt")

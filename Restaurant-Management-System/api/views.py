@@ -82,7 +82,7 @@ class GenerateQRCodeAPIView(APIView):
 #  Food API
 class FoodAPIView(APIView):
     def get(self, request):
-        foods = Food.objects.all()
+        foods = Food.objects.all()[:10]
         total=foods.count()
         serializer = FoodSerializer(foods, many=True)
         return Response({"message":"Foods gets Successfully","total":total,"data":serializer.data},status=status.HTTP_200_OK)
@@ -382,17 +382,22 @@ class OrderStatusAPIView(APIView):
 
 # # Payment API
 class PaymentAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+        payments=Payment.objects.filter(user=request.user).all()
+        serializer=PaymentSerializer(payments,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
     def post(self, request):
         data = request.data
-        user = request.user
         items = data.get('order', [])
         amount = data.get('amount')
         payment_method = data.get('payment_method')
         restaurant_id = data.get('restaurant_id')
-        customer_name = data.get('customer_name')
-        customer_contact = data.get('customer_contact')
+        # customer_contact = data.get('customer_contact')
 
-        if not items or not amount or not payment_method or not restaurant_id:
+        if not items or not amount or not payment_method or not restaurant_id or not request.user:
             return Response(
                 {"success": False, "error": "Missing required payment information."},
                 status=status.HTTP_400_BAD_REQUEST
@@ -417,18 +422,18 @@ class PaymentAPIView(APIView):
 
         try:
             # Check if a similar unpaid order already exists
-            if not customer_contact or not customer_name:
-                return Response(
-                    {"success": False, "error": "Missing customer information."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            # if not customer_contact or not customer_name:
+            #     return Response(
+            #         {"success": False, "error": "Missing customer information."},
+            #         status=status.HTTP_400_BAD_REQUEST
+            #     )
             
             existing_order = Order.objects.filter(
                 restaurant=restaurant,
-                user=user,# use it when User model Inherits
-                customer_name=customer_name,
-                customer_contact=customer_contact,
-                status='Pending',
+                customer_name=request.user,# use it when User model Inherits
+                # customer_name=customer_name,
+                # customer_contact=customer_contact,
+                status='Completed',
                 items__food__in=[item['id'] for item in items]
             ).distinct().first()
 
@@ -443,8 +448,8 @@ class PaymentAPIView(APIView):
             with transaction.atomic():
                 order = Order.objects.create(
                     restaurant=restaurant,
-                    user=user,
-                    status='Pending'
+                    customer_name=request.user,
+                    status='Completed',
                 )
 
                 for item in items:
@@ -469,18 +474,19 @@ class PaymentAPIView(APIView):
                     order=order,
                     amount=amount,
                     payment_method=payment_method,
-                    is_paid=False
+                    is_paid=True
                 )
 
                 # Clear user's cart after initiating payment
-                CartItem.objects.filter(user=user).delete() #use it when User Model Inheirts in models.py
-                CartItem.objects.filter(customer_contact=customer_contact).delete()
+                CartItem.objects.filter(user=request.user).delete() #use it when User Model Inheirts in models.py
+                # CartItem.objects.filter(customer_contact=customer_contact).delete()
 
                 return Response(
                     {
                         "success": True,
                         "order_id": order.id,
                         "payment_id": payment.id,
+                        "is_paid":True,
                         "message": "Order and payment initiated successfully."
                     },
                     status=status.HTTP_201_CREATED

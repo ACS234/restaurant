@@ -58,9 +58,7 @@ export const getFoods = async () => {
 
 export const getMenus = async () => {
   try {
-    const response= await getData(`/api/menus/`);
-    console.log("reponse from service",response)
-    return response;
+    return await getData(`/api/menus/`);
   } catch (error) {
     toast.error("Something went wrong");
     throw error;
@@ -125,7 +123,7 @@ export const fetchQRData = async () => {
 
 export const addCart = async (data) => {
   try {
-    return await postData(`/api/cart/add/`, data);
+    return await postData(`/api/cart/`, data);
   } catch (error) {
     console.error('Add to cart error:', error);
     toast.error("Something went wrong.");
@@ -168,7 +166,7 @@ export const orderPayment = async (data) => {
     return response;
   } catch (error) {
     console.error('Payment error:', error);
-    toast.error("Something went wrong.");
+    toast.error(error.message);
   }
 };
 // AUTH
