@@ -24,4 +24,6 @@ urlpatterns = [
     path('order/<int:restaurant_id>/<int:table_id>/', MenusAPIView.as_view(), name='menu_qr'),
     path('get_table/',TableAPIView.as_view(),name='table'),
     path('foods/search/',SearchFoodAPIView.as_view(),name='search_food'),
+    path('foods/categories/',GetCategory.as_view(),name='categories'),
+    path('reservations/',ReservationAPIView.as_view(),name='reservations'),
 ]

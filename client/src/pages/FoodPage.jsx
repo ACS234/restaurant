@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getFoods, addCart } from '../services/apiService'; 
+import { getFoods, addCart } from '../services/apiServices'; 
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,9 @@ const FoodPage = () => {
             const result = await addCart({ food: foodId });
             if (result) {
                 toast.success("Item added to cart!");
-                navigate('/cart');
+                setTimeout(() => {
+                    navigate('/cart');
+                }, 2000);
             }
         } catch (error) {
             toast.error("Failed to add item to cart.");
@@ -55,7 +57,7 @@ const FoodPage = () => {
                                 <p><strong>Price:</strong> ₹{menuItem.price}</p>
                                 <button
                                     onClick={() => handleAddToCart(menuItem.id)}
-                                    className="mt-3 w-full py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                                    className="mt-3 w-full py-1 bg-green-500 text-white rounded cursor-pointer hover:bg-green-600 text-xs"
                                 >
                                     Add to Cart
                                 </button>

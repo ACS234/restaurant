@@ -15,6 +15,7 @@ from .models import *
 from .serializers import *
 from django.template.loader import render_to_string
 import pdfkit
+from django.utils import timezone
 import os
 from django.conf import settings
 from PIL import Image
@@ -22,14 +23,41 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 from django.db import transaction
+
+
+class FoodFilter(filters.FilterSet):
+    name = filters.CharFilter(field_name="name", lookup_expr="contains")
+    category = filters.CharFilter(field_name="category", lookup_expr="contains")
+    is_vegetarian = filters.BooleanFilter(field_name="is_vegetarian")
+
+    class Meta:
+        model = Food
+        fields = ['name', 'category', 'is_vegetarian']
 
 # Search API for Food And Menu
 class SearchFoodAPIView(generics.ListAPIView):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name','category', 'is_vegetarian']
+    filterset_class = FoodFilter
+
+
+class GetCategory(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self, request):
+        # food_categories = Food.objects.values_list('category', flat=True).distinct()
+        # menu_categories = Menu.objects.values_list('category', flat=True).distinct()
+        # all_categories = list(set(food_categories) | set(menu_categories))
+        # return Response(all_categories)
+        food_categories = Food.objects.values_list('category', flat=True).distinct()
+        food_categories = [f"Food: {category}" for category in food_categories]
+        menu_categories = Menu.objects.values_list('category', flat=True).distinct()
+        menu_categories = [f"Menu: {category}" for category in menu_categories]
+        all_categories = list(set(food_categories) | set(menu_categories))
+        return Response(all_categories)
+
         
 #  Restaurant API
 class RestaurantAPIView(APIView):
@@ -181,14 +209,18 @@ class MenuDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class TableAPIView(APIView):
     def get(self, request):
         try:
-            tables = Table.objects.all()
-            serializer = TableSerializer(tables, many=True)  
-            return Response({"message":"Your Tables","data": serializer.data}, status=status.HTTP_200_OK)
+            unbooked_tables = Table.objects.filter(reservations__isnull=True)
+
+            serializer = TableSerializer(unbooked_tables, many=True)
+            return Response({"message": "Unbooked tables", "data": serializer.data}, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CartItemCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -241,14 +273,65 @@ class CartDetailAPIView(APIView):
         return Response({"message": "Cart Item Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 class ReservationAPIView(APIView):
-    def get(self,request):
+    permission_classes=[IsAuthenticated]
+
+    def get(self, request):
         try:
-            reservation=Reservation.objects.all()
-            serializer=ReservationSerializer(reservation,many=True)
-            return Response({"message":"Your reservations","data":serializer.data},status=status.HTTP_200_OK)
+            today = timezone.now().date()
+            now = timezone.now().time()
+
+            reservations = Reservation.objects.filter(
+                reservation_date__gte=today
+            ).order_by('reservation_date', 'reservation_time')
+
+            serializer = ReservationSerializer(reservations, many=True)
+            return Response({"message": "Upcoming reservations", "data": serializer.data}, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+    # def post(self, request):
+    #     try:
+    #         data = request.data
+    #         print("Request data:", data)
+
+    #         table_id = data.get('table_number')
+    #         if not table_id:
+    #             return Response({"error": "No table number provided."}, status=status.HTTP_400_BAD_REQUEST)
+            
+    #         table = get_object_or_404(Table, pk=table_id)  
+
+    #         print("table",table)
+            
+    #         date = data.get('reservation_date')
+    #         start_time = data.get('reservation_time')
+    #         end_time = data.get('reservation_end_time')
+
+    #         is_booked = Reservation.objects.filter(
+    #             table_id=table_id,
+    #             reservation_date=date,
+    #             reservation_time__lt=end_time,
+    #             reservation_end_time__gt=start_time
+    #         ).exists()
+
+    #         if is_booked:
+    #             return Response(
+    #                 {"error": "This table is already booked for the selected time."},
+    #                 status=status.HTTP_400_BAD_REQUEST
+    #             )
+
+    #         data['table'] = table.id 
+
+    #         serializer = ReservationSerializer(data=data)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response({"message": "Reservation created", "data": serializer.data}, status=status.HTTP_201_CREATED)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    #     except Exception as e:
+    #         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
@@ -256,12 +339,14 @@ class ReservationAPIView(APIView):
             table = serializer.validated_data['table']
             date = serializer.validated_data['reservation_date']
             time = serializer.validated_data['reservation_time']
+            end_time = serializer.validated_data['reservation_end_time']
 
             # Check if the table is already booked at this date and time
             is_booked = Reservation.objects.filter(
                 table=table,
                 reservation_date=date,
-                reservation_time=time
+                reservation_time=time,
+                reservation_end_time=end_time
             ).exists()
 
             if is_booked:
@@ -273,6 +358,7 @@ class ReservationAPIView(APIView):
             serializer.save()
             return Response({'message': 'Booking submitted!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 #Order API
 class OrderAPIView(APIView):

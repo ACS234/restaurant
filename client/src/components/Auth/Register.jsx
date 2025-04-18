@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Signup } from '../../services/apiService';
+import { Signup } from '../../services/apiServices';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../../constants';
 import { toast, ToastContainer } from 'react-toastify';
 

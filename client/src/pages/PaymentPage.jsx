@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { getRestaurant, orderPayment } from '../services/apiService';
+import { getRestaurant, orderPayment } from '../services/apiServices';
 
 const PaymentPage = ({ cartData, totalAmount }) => {
   const navigate = useNavigate();

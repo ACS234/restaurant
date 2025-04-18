@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IoIosCart } from 'react-icons/io';
 import { FiPlus, FiMinus } from 'react-icons/fi';
 import { FaTrash } from "react-icons/fa";
-import { getCart, removeCart, updateCart } from '../services/apiService';
+import { getCart, removeCart, updateCart } from '../services/apiServices';
 import { toast, ToastContainer } from 'react-toastify';
 import { RiSecurePaymentFill } from "react-icons/ri";
 import { TbArrowBackUp } from "react-icons/tb";

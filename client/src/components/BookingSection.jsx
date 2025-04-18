@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import img from '../assets/img_9.jpg'
-import { bookTable, getTable } from '../services/apiService';
+import { bookTable, getTable } from '../services/apiServices';
 import { toast, ToastContainer } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 const BookingSection = () => {
   const [availableTables, setAvailableTables] = useState([]);
   const [formData, setFormData] = useState({
@@ -9,18 +9,18 @@ const BookingSection = () => {
     customer_email: '',
     reservation_date: '',
     reservation_time: '',
+    reservation_end_time: '',
     number_of_people: '',
     table: null,
   });
 
+  const navigate=useNavigate()
 
   useEffect(() => {
     const fetchTable = async () => {
       try {
         const response = await getTable();
-        console.log("response", response.data)
         if (response.data) {
-          console.log("table data", response.data)
           setAvailableTables(response.data);
         } else {
           toast.error('No available tables at the moment.');
@@ -59,82 +59,108 @@ const BookingSection = () => {
     try {
       const response = await bookTable(data);
       toast.success(response?.message);
+      setFormData({});
+      setTimeout(()=>{
+        navigate('/reservations')
+      },2000)
     } catch (error) {
-      toast.error(error.response.data.error);
+      toast.error(error?.response?.data?.error);
     }
   }
 
   return (
-    <section className="py-16 px-4 bg-gray-800 text-white text-center relative blur-[1px] w-full h-[650px] bg-cover bg-center" style={{ backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <h2 className="text-3xl font-bold mb-6">Book A Table</h2>
-      <ToastContainer />
-      <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-4 p-6 shadow-lg bg-blue-200 rounded-lg z-10">
-        <input
-          type="text"
-          name="customer_name"
-          placeholder="Your Name"
-          value={formData.customer_name}
-          onChange={handleChange}
-          className="w-full p-3 bg-gray-800 text-zinc-300 rounded-lg shadow-lg focus:outline-none"
-          required
-        />
-        <input
-          type="email"
-          name="customer_email"
-          placeholder="Your Email"
-          value={formData.customer_email}
-          onChange={handleChange}
-          className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none"
-          required
-        />
-        <select
-          value={formData.table || ''}
-          className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none"
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              table: e.target.value,
-            }))
-          }
-        >
-          <option value="" className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none">Select a table</option>
-          {availableTables.map((table) => (
-            <option key={table.id} value={table.table_number} className="w-full p-3 bg-white rounded-lg shadow-lg focus:outline-none">
-              Table {table.table_number} (Seats: {table.seats})
-            </option>
-          ))}
-        </select>
+    <section className="relative w-full h-[650px] flex items-center justify-center px-4 py-16 text-white overflow-hidden">
+  <div
+    className="absolute inset-0 bg-cover bg-center filter blur-sm scale-105"
+  ></div>
 
-        <input
-          type="date"
-          name="reservation_date"
-          value={formData.reservation_date}
-          onChange={handleChange}
-          className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none"
-          required
-        />
-        <input
-          type="time"
-          name="reservation_time"
-          value={formData.reservation_time}
-          onChange={handleChange}
-          className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none"
-          required
-        />
-        <input
-          type="number"
-          name="number_of_people"
-          placeholder="Number of People"
-          value={formData.number_of_people}
-          onChange={handleChange}
-          className="w-full p-3 bg-gray-400 text-zinc-600 rounded-lg shadow-lg focus:outline-none"
-          required
-        />
-        <button type="submit" className="bg-gray-400 text-zinc-600 py-2 px-6 rounded-md hover:bg-green-300">
-          Book Now
-        </button>
-      </form>
-    </section>
+  <div className="absolute inset-0 bg-gray-600 bg-opacity-50 "></div>
+
+  <div className="relative text-center w-full max-w-2xl">
+    <h2 className="text-4xl font-bold mb-6 text-white">Book A Table</h2>
+    <ToastContainer />
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-2xl"
+    >
+      <input
+        type="text"
+        name="customer_name"
+        placeholder="Your Name"
+        value={formData.customer_name}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <input
+        type="email"
+        name="customer_email"
+        placeholder="Your Email"
+        value={formData.customer_email}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <select
+        value={formData.table || ''}
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            table: e.target.value,
+          }))
+        }
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+      >
+        <option className='bg-white/20' value="">Select a table</option>
+        {availableTables.map((table) => (
+          <option className='bg-gray-600' key={table.id} value={table.table_number}>
+            Table {table.table_number} (Seats: {table.seats})
+          </option>
+        ))}
+      </select>
+      <input
+        type="date"
+        name="reservation_date"
+        value={formData.reservation_date}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <input
+        type="time"
+        name="reservation_time"
+        value={formData.reservation_time}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <input
+        type="time"
+        name="reservation_end_time"
+        value={formData.reservation_end_time}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <input
+        type="number"
+        name="number_of_people"
+        placeholder="Number of People"
+        value={formData.number_of_people}
+        onChange={handleChange}
+        className="w-full p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none"
+        required
+      />
+      <button
+        type="submit"
+        className="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-md transition duration-300 font-semibold"
+      >
+        Book Now
+      </button>
+    </form>
+  </div>
+</section>
+
   );
 };
 

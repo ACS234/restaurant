@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMenuDetail, addCart } from '../services/apiService';
+import { getMenuDetail, addCart } from '../services/apiServices';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
 import { IoIosStarHalf, IoIosAddCircle, IoIosRemoveCircle } from "react-icons/io";

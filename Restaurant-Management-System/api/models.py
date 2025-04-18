@@ -79,6 +79,7 @@ class Reservation(models.Model):
     customer_email = models.EmailField()
     reservation_date = models.DateField()
     reservation_time = models.TimeField()
+    reservation_end_time=models.TimeField()
     number_of_people = models.PositiveIntegerField()
 
     def __str__(self):

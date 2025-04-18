@@ -7,24 +7,30 @@ const GallerySection = lazy(() => import('./GallerySection'))
 const BookingSection = lazy(() => import('./BookingSection'))
 const ReviewSection = lazy(() => import('./ReviewSection'))
 
-export default function Home() {
+export default function Home({isAuthenticated}) {
     return (
         <>
+        {isAuthenticated?
+        (
+            <>
             <Header />
             <MainSection />
             <StarterSection />
-
-            <Suspense fallback={<div>Loading gallery...</div>}>
-                <GallerySection />
-            </Suspense>
-
             <Suspense fallback={<div>Loading booking...</div>}>
                 <BookingSection />
             </Suspense>
-
+            </>
+        ):(
+            <>
+            <Suspense fallback={<div>Loading gallery...</div>}>
+                <GallerySection />
+            </Suspense>
             <Suspense fallback={<div>Loading reviews...</div>}>
                 <ReviewSection />
             </Suspense>
+            </>
+        )
+    }
         </>
     )
 }

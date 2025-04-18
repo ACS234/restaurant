@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Login as loginUser } from '../../services/apiService';
+import { Login as loginUser } from '../../services/apiServices';
 import { ACCESS_TOKEN,REFRESH_TOKEN } from '../../constants';
 import { toast, ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';

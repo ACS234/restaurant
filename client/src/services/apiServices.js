@@ -155,7 +155,7 @@ export const bookTable = async (data) => {
     return await postData(`/api/book/`, data);
   } catch (error) {
     console.error('Booking error:', error);
-    toast.error("Something went wrong.");
+    throw error
   }
 };
 
@@ -169,6 +169,38 @@ export const orderPayment = async (data) => {
     toast.error(error.message);
   }
 };
+
+export const searchFoods = async (queryParams) => {
+  try {
+    const response = await getData(`/api/foods/search`, queryParams);
+    return response;
+  } catch (error) {
+    toast.error("Error searching food");
+    throw error;
+  }
+};
+
+export const getCategories = async () => {
+  try {
+    const response = await getData(`/api/foods/categories/`);
+    console.log(response)
+    return response;
+  } catch (error) {
+    toast.error("Error searching food");
+    throw error;
+  }
+};
+
+
+export const getReservations=async()=>{
+  try {
+    const response=await getData(`/api/reservations/`)
+    return response;
+  } catch (error) {
+    console.log("error",error)
+    throw error
+  }
+}
 // AUTH
 
 const registerData = async (url, data) => {
