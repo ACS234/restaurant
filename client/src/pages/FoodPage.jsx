@@ -35,7 +35,7 @@ const FoodPage = () => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen">
+        <div className="bg-gray-400 min-h-screen">
             <ToastContainer />
             <section className="py-8 px-2">
                 <div className="max-w-7xl mx-auto">
@@ -43,7 +43,7 @@ const FoodPage = () => {
                     <hr className="mb-6 border-t border-gray-300" />
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {foods.map((menuItem) => (
-                            <div key={menuItem.id} className="bg-white p-3 rounded-md shadow text-sm">
+                            <div key={menuItem.id} className="bg-cyan-950 p-3 rounded-md shadow text-sm">
                                 <img
                                     src={`http://localhost:8000/${menuItem.image}`}
                                     alt={menuItem.name}

@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { ACCESS_TOKEN } from './constants'; 
 import ProtectedRoute from './components/Auth/ProtectedRoute';  
-import Navbar from './layout/Navbar';
+import Sidebar from './layout/Navbar';
 import Footer from './layout/Footer';
 import PaymentPage from './pages/PaymentPage';
 // import QRHandler from './components/QrHandler';
@@ -53,7 +53,8 @@ function App() {
 
   return (
     <>
-      <Navbar isAuthenticated={isAuthenticated} handleLogout={handleLogout} loggedInUser={loggedInUser} />
+      <Sidebar isAuthenticated={isAuthenticated} handleLogout={handleLogout} loggedInUser={loggedInUser} />
+      <div className="ml-64">
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -63,7 +64,7 @@ function App() {
           <Route path="/gallery" element={<GallerySection />} />
           <Route path="/reviews" element={<ReviewSection />} />
 
-          <Route path="/" element={<Home isAuthenticated={isAuthenticated} />} />
+          <Route path="/" element={<Home />} />
           <Route path="/foods" element={<FoodPage />} />
           <Route path="/menu" element={<MenuSection />} />
           <Route path="/menu-detail/:id" element={<MenuDetail />} />
@@ -80,6 +81,7 @@ function App() {
         </Routes>
       </Suspense>
       <Footer />
+      </div>
     </>
   );
 }

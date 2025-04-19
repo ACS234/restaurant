@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { getMenus } from '../services/apiServices';
-import { useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FoodPage from '../pages/FoodPage'
+import { MdOutlineMoreHoriz } from "react-icons/md";
 
 const MenuSection = () => {
   const [menus, setMenus] = useState([]);
@@ -42,14 +43,23 @@ const MenuSection = () => {
 
   const selectedMenu = menus.find((menu) => menu.id === selectedMenuId);
 
+  const handleAddToCart = (item) => {
+    // You can use your cart logic here
+    toast.success('Adding to cart:', item);
+  };
+
+
+
+
+
   return (
     <>
-      <section className="py-8 px-2 bg-gray-100 text-center">
+      <section className="py-8 px-2 bg-gray-900 text-center">
         <ToastContainer />
         <div className='mt-20'>
           <h2 className="text-2xl font-bold mb-4">Our Menu</h2>
           <hr className="w-1/2 mx-auto my-6 border-t-2 border-dashed border-blue-400" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-6 justify-center mt-20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-11 gap-10 justify-center mt-20">
             {menus.map((menu) => (
               <div key={menu.id} className="flex flex-col items-center space-y-2">
                 <div
@@ -66,26 +76,57 @@ const MenuSection = () => {
                   </div>
                 </div>
                 <button
+                  aria-label={`View details for ${menu.name}`}
                   onClick={() => menuDetail(menu.id)}
-                  className="w-full py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                  className="ml-16 flex items-center justify-center cursor-pointer transform scale-100 hover:scale-110 transition duration-300 hover:bg-gray-600 text-white rounded text-xs"
                 >
-                  See Menu
+                  <MdOutlineMoreHoriz size={20} />
                 </button>
               </div>
             ))}
           </div>
           {selectedMenuId && selectedMenu && (
-            <div className="mt-10 mx-auto max-w-3xl bg-white border border-gray-200 rounded-xl p-4 text-left text-sm shadow-sm">
-              <h3 className="text-lg font-semibold mb-3">{selectedMenu.name} Items</h3>
+            <div className="mt-10 mx-auto max-w-5xl">
+              <h3 className="text-2xl font-semibold mb-6">{selectedMenu.name} Items</h3>
+
               {selectedMenu.foods && selectedMenu.foods.length > 0 ? (
-                selectedMenu.foods.map((item, index) => (
-                  <div key={index} className="py-2 border-b last:border-b-0">
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-gray-600">{item.description}</div>
-                  </div>
-                ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {selectedMenu.foods.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-cyan-950 border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col justify-between"
+                    >
+                      <div>
+                        <img
+                          src={`http://localhost:8000${item.image}`}
+
+                          alt={item.name}
+                          className="w-full h-80 sm:h-40 md:h-40 object-cover rounded mb-2"
+                        />
+                        <h4 className="text-lg font-semibold mb-1">{item.name}</h4>
+                        <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                        <div className="text-white font-medium mb-1"><span className='bg-green-600 px-4 py-2 rounded-lg'>${item.price}</span></div>
+                        <div className="text-yellow-500 text-sm mb-3">
+                          {"★".repeat(Math.round(item.rating || 0)).padEnd(5, "☆")}
+                          <span className="text-gray-500 ml-1">({item.rating ?? "0.0"})</span>
+                        </div>
+                      </div>
+
+                      <button
+                        className={`mt-auto text-white text-sm font-medium py-2 px-4 rounded transition duration-200 ${item
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                          : 'bg-gray-300 cursor-not-allowed'
+                          }`}
+                        onClick={() => handleAddToCart(item)}
+                      >
+                        Add to Cart
+                      </button>
+
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-gray-500 italic">No items found for this menu.</p>
+                <p className="text-gray-500 italic text-sm">No items found for this menu.</p>
               )}
             </div>
           )}
