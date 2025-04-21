@@ -20,10 +20,11 @@ urlpatterns = [
     path('payments/', PaymentAPIView.as_view(), name='payment'),
     path('orders/<int:order_id>/receipt/', GenerateReceiptAPIView.as_view(), name='generate_receipt'),
     path('reviews/', ReviewAPIView.as_view(), name='review_list'),
-    path('qr_code/<int:restaurant_id>/<int:table_id>/', GenerateQRCodeAPIView.as_view(), name='generate_qr_code'),
+    path('restaurant/generate_qrcodes/', GenerateQRCodeView.as_view(), name='qr_codes'),
     path('order/<int:restaurant_id>/<int:table_id>/', MenusAPIView.as_view(), name='menu_qr'),
     path('get_table/',TableAPIView.as_view(),name='table'),
     path('foods/search/',SearchFoodAPIView.as_view(),name='search_food'),
     path('foods/categories/',GetCategory.as_view(),name='categories'),
     path('reservations/',ReservationAPIView.as_view(),name='reservations'),
+    path('qrcode/', QRCodeByTableNumberView.as_view(), name='qrcode-by-table-number'),
 ]

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getFoods, addCart } from '../services/apiServices'; 
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { FaCartArrowDown } from "react-icons/fa";
 
 const FoodPage = () => {
     const [foods, setFoods] = useState([]);
@@ -12,7 +13,7 @@ const FoodPage = () => {
             const data = await getFoods();
             setFoods(data);
         } catch (error) {
-            toast.error('Failed to load foods.',error.message);
+            toast.error(error.message);
         } 
     };
     useEffect(() => {
@@ -29,7 +30,7 @@ const FoodPage = () => {
                 }, 2000);
             }
         } catch (error) {
-            toast.error("Failed to add item to cart.");
+            toast.error("Please logged In");
             console.error(error);
         }
     };
@@ -59,7 +60,7 @@ const FoodPage = () => {
                                     onClick={() => handleAddToCart(menuItem.id)}
                                     className="mt-3 w-full py-1 bg-green-500 text-white rounded cursor-pointer hover:bg-green-600 text-xs"
                                 >
-                                    Add to Cart
+                                    <FaCartArrowDown size={20}/>
                                 </button>
                             </div>
                         ))}

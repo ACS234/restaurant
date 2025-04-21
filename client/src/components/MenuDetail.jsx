@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { getMenuDetail, addCart } from '../services/apiServices';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IoIosStarHalf, IoIosAddCircle, IoIosRemoveCircle } from "react-icons/io";
+import { IoIosStarHalf } from "react-icons/io";
 import { TbArrowBackUp } from "react-icons/tb";
+import { FaCartArrowDown } from "react-icons/fa";
 
 const MenuDetail = () => {
   const { id } = useParams();
@@ -95,7 +96,7 @@ const MenuDetail = () => {
                   onClick={() => handleAddToCart(item.id)}
                   className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
                 >
-                  Add to Cart
+                  <FaCartArrowDown size={20}/>
                 </button>
                 <button
                 onClick={()=>{handleOrder()}}

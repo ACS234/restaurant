@@ -60,6 +60,7 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.food.name}"
     
+    
 class Table(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='tables')
     table_number = models.IntegerField()
@@ -68,9 +69,15 @@ class Table(models.Model):
     def __str__(self):
         return f"Table {self.table_number} - {self.restaurant.name}"
     
-    def get_qr_code_url(self):
-        # Create URL containing restaurant and table IDs
-        return f"http://localhost:8000/order/{self.restaurant.id}/{self.id}/"
+class QRCode(models.Model):
+    restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE)
+    type=models.CharField(max_length=200,null=True,blank=True)
+    qr_code=models.ImageField(upload_to="qrcode_images/", null=True, blank=True)
+    details=models.JSONField()
+
+    def __str__(self):
+        return f"{self.type} {self.details}"
+
 
 
 class Reservation(models.Model):
@@ -81,9 +88,16 @@ class Reservation(models.Model):
     reservation_time = models.TimeField()
     reservation_end_time=models.TimeField()
     number_of_people = models.PositiveIntegerField()
+    is_paid = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, default='booked')
 
     def __str__(self):
-        return f"Reservation for {self.customer_name} on {self.reservation_date} at {self.table}"
+        return f"Reservation for {self.customer_name} on {self.reservation_date} at {self.table} Paid {self.is_paid} Status {self.status}"
+    
+    @property
+    def is_expired(self):
+        now = timezone.now()
+        return now.time() > self.reservation_end_time and not self.is_paid
 
 class Order(models.Model):
     STATUS_CHOICES = [

@@ -136,7 +136,7 @@ STRIPE_SECRET_KEY = "sk_test_51RAQcZH1WttBugV6vvyID4HhfFLqtb1DldmhZtfjWd0EibZmUE
 
 
 
-
+APPEND_SLASH=False
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

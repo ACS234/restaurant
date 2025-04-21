@@ -56,7 +56,6 @@ const MenuSection = () => {
     <>
       <section className="py-8 px-2 bg-gray-900 text-center">
         <ToastContainer />
-        <div className='mt-20'>
           <h2 className="text-2xl font-bold mb-4">Our Menu</h2>
           <hr className="w-1/2 mx-auto my-6 border-t-2 border-dashed border-blue-400" />
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-11 gap-10 justify-center mt-20">
@@ -130,7 +129,6 @@ const MenuSection = () => {
               )}
             </div>
           )}
-        </div>
       </section>
       <FoodPage />
     </>

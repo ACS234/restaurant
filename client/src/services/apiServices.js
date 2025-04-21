@@ -201,6 +201,28 @@ export const getReservations=async()=>{
     throw error
   }
 }
+
+export const getRestaurants=async()=>{
+  try {
+    const response=await getData(`/api/restaurants/`)
+    return response;
+  } catch (error) {
+    console.log("error",error)
+    throw error
+  }
+}
+
+export const getQRCode = async () => {
+  try {
+    const response = await getData(`/api/restaurant/generate_qrcodes/`);
+    return response;
+  } catch (error) {
+    console.log("error", error);
+    throw error;
+  }
+};
+
+
 // AUTH
 
 const registerData = async (url, data) => {

@@ -5,6 +5,7 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Sidebar from './layout/Navbar';
 import Footer from './layout/Footer';
 import PaymentPage from './pages/PaymentPage';
+import QRManagementPage from './pages/QrManagementPage';
 // import QRHandler from './components/QrHandler';
 
 const Home = lazy(() => import('./components/Home'));
@@ -77,7 +78,7 @@ function App() {
           <Route path="/payment" element={<ProtectedRoute><PaymentPage/></ProtectedRoute>} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/reservations" element={<ProtectedRoute><Reservations/></ProtectedRoute>} />
-          {/* <Route path="/menus" element={<ProtectedRoute><QRHandler/></ProtectedRoute>} /> */}
+          <Route path="/qr_code" element={<ProtectedRoute><QRManagementPage/></ProtectedRoute>} />
         </Routes>
       </Suspense>
       <Footer />

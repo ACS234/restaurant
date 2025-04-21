@@ -1,12 +1,13 @@
 import qrcode
 import stripe
+import io
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
 from django.shortcuts import get_object_or_404, render
 from django.http import FileResponse
 from rest_framework.response import Response
@@ -20,6 +21,7 @@ import os
 from django.conf import settings
 from PIL import Image
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from .utils import generate_qr_code
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 from django_filters.rest_framework import DjangoFilterBackend
@@ -45,7 +47,7 @@ class SearchFoodAPIView(generics.ListAPIView):
 
 
 class GetCategory(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticatedOrReadOnly]
     def get(self, request):
         # food_categories = Food.objects.values_list('category', flat=True).distinct()
         # menu_categories = Menu.objects.values_list('category', flat=True).distinct()
@@ -95,17 +97,92 @@ class RestaurantQRAPIView(APIView):
     def get(self, request, pk):
         restaurant = get_object_or_404(Restaurant, pk=pk)
         return FileResponse(open(restaurant.qr_code.path, "rb"), content_type="image/png")
-    
-class GenerateQRCodeAPIView(APIView):
+
+
+class GenerateQRCodeView(APIView):
+
+    def post(self, request):
+        table_id = request.data.get("table_id", None)
+        if not table_id:
+            return Response({"error": "Table ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            restaurant = Restaurant.objects.first()
+
+            if not restaurant:
+                return Response({"error": "Default restaurant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            restaurant_id = restaurant.id
+            table = Table.objects.get(id=table_id, restaurant_id=restaurant_id)
+        except Table.DoesNotExist:
+            return Response({"error": "Table not found in the default restaurant."}, status=status.HTTP_404_NOT_FOUND)
+
+        existing_qr_code = QRCode.objects.filter(
+            restaurant=restaurant,
+            type="table",
+            details__contains={"table_id": table.id}  
+        ).first()
+
+        if existing_qr_code:
+            return Response(
+            {"error": f"QR code for table {table.table_number} already exists."},
+            status=status.HTTP_400_BAD_REQUEST)
+        
+        qr_data_url = f"https://yourdomain.com/qrcode/?table_number="
+        img = generate_qr_code(qr_data_url)
+        bio = io.BytesIO()
+        img.save(bio, format="PNG")
+        qr_image_content = ContentFile(bio.getvalue(), name=f"table_{table.id}_qr.png")
+
+        qr_code_obj = QRCode.objects.create(
+            restaurant=restaurant,
+            type="table",
+            qr_code=qr_image_content,
+            details={
+                "table_number": table.table_number,
+            }
+        )
+
+        serialized = QRCodeSerializer(qr_code_obj, context={'request': request})
+        return Response({"qr_code": serialized.data}, status=status.HTTP_201_CREATED)
+
+
+    def get(self, request):
+        restaurant = Restaurant.objects.first() 
+        if not restaurant:
+            return Response({"error": "Restaurant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        qr_codes = QRCode.objects.filter(restaurant=restaurant, type="table")
+
+        serialized_qr_codes = QRCodeSerializer(qr_codes, many=True, context={'request': request})
+
+        return Response(serialized_qr_codes.data, status=status.HTTP_200_OK)
+
+class QRCodeByTableNumberView(APIView):
+    def get(self, request):
+        table_number = request.query_params.get('table_number')
+        if not table_number:
+            return Response({'error': 'table_number is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            qr_code = QRCode.objects.get(details__table_number=table_number)
+        except QRCode.DoesNotExist:
+            return Response({'error': 'QR Code not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = QRCodeSerializer(qr_code, context={'request': request})
+        return Response(serializer.data)
+
+# for qr code
+class MenusAPIView(APIView):
     def get(self, request, restaurant_id, table_id):
-        table = Table.objects.get(id=table_id, restaurant_id=restaurant_id)
-        qr_url = table.get_qr_code_url()
+        restaurant = Restaurant.objects.get(id=restaurant_id)
+        table = Table.objects.get(id=table_id, restaurant=restaurant)
 
-        qr_code = qrcode.make(qr_url)
+        menu_items = restaurant.menus.all()
 
-        response = HttpResponse(content_type="image/png")
-        qr_code.save(response, "PNG")
-        return response
+        serializer = MenuSerializer(menu_items, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 #  Food API
 class FoodAPIView(APIView):
@@ -167,7 +244,7 @@ class FoodDetailAPIView(APIView):
 
 # Menu API
 class MenuAPIView(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticatedOrReadOnly]
     def get(self, request):
         menus = Menu.objects.all()
         serializer = MenuSerializer(menus, many=True)
@@ -180,17 +257,7 @@ class MenuAPIView(APIView):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-# for qr code
-class MenusAPIView(APIView):
-    def get(self, request, restaurant_id, table_id):
-        restaurant = Restaurant.objects.get(id=restaurant_id)
-        table = Table.objects.get(id=table_id, restaurant=restaurant)
 
-        menu_items = restaurant.menus.all()
-
-        serializer = MenuSerializer(menu_items, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MenuDetailAPIView(APIView):
     def get(self, request, pk):
@@ -213,8 +280,7 @@ class MenuDetailAPIView(APIView):
 class TableAPIView(APIView):
     def get(self, request):
         try:
-            unbooked_tables = Table.objects.filter(reservations__isnull=True)
-
+            unbooked_tables = Table.objects.filter(reservations__isnull=True).select_related('restaurant')
             serializer = TableSerializer(unbooked_tables, many=True)
             return Response({"message": "Unbooked tables", "data": serializer.data}, status=status.HTTP_200_OK)
 
@@ -229,15 +295,26 @@ class CartItemCreateView(APIView):
         cart_items = CartItem.objects.filter(user=request.user).select_related('food')
         serializer = CartItemSerializer(cart_items, many=True)
         return Response({"data": serializer.data, "total": cart_items.count()}, status=status.HTTP_200_OK)
+    
+    def post(self,request):
+        try:
+            food_id = request.data.get('food')
+            quantity = request.data.get('quantity', 1)
 
-    def post(self, request):
-        food_id = request.data.get('food')
-        quantity = request.data.get('quantity', 1)
+            food = get_object_or_404(Food, id=food_id)
 
-        food = get_object_or_404(Food, id=food_id)
+            cart_item = CartItem.objects.create(
+                food=food,
+                quantity=quantity,
+                user=request.user
+            )
+            return Response(CartItemSerializer(cart_item).data,status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        cart_item = CartItem.objects.create(food=food, quantity=quantity, user=request.user)
-        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
     def put(self, request, item_id):
         cart_item = get_object_or_404(CartItem, id=item_id, user=request.user)
@@ -252,7 +329,7 @@ class CartItemCreateView(APIView):
 
 
 class CartDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
         cart_item = get_object_or_404(CartItem, id=pk, user=request.user)
@@ -273,65 +350,48 @@ class CartDetailAPIView(APIView):
         return Response({"message": "Cart Item Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 class ReservationAPIView(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes = [IsA] 
 
     def get(self, request):
         try:
             today = timezone.now().date()
-            now = timezone.now().time()
+            current_time = timezone.now().time()
 
-            reservations = Reservation.objects.filter(
-                reservation_date__gte=today
+            expired_reservations = Reservation.objects.filter(
+                reservation_date=today,# get the date from db
+                reservation_end_time__lte=current_time,# get the date from db
+                status='booked',
+                is_paid=False
+            )
+            expired_serializer = ReservationSerializer(expired_reservations, many=True)
+
+            for reservation in expired_reservations:
+                if hasattr(reservation, 'table'):
+                    reservation.table.is_available = True
+                    reservation.table.save()
+            expired_reservations.delete()
+
+            active_reservations = Reservation.objects.filter(
+                reservation_date__gte=today,
+                status='booked'
+            ).order_by('reservation_date', 'reservation_time')
+            
+            inactive_reservations = Reservation.objects.filter(
+                status='unbooked'
             ).order_by('reservation_date', 'reservation_time')
 
-            serializer = ReservationSerializer(reservations, many=True)
-            return Response({"message": "Upcoming reservations", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response({
+                "expired_reservations": expired_serializer.data,
+                "active_reservations": ReservationSerializer(active_reservations, many=True).data,
+                "inactive_reservations": ReservationSerializer(inactive_reservations, many=True).data,
+                "message": "Expired reservations deleted, tables freed, and active reservations listed."
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-    # def post(self, request):
-    #     try:
-    #         data = request.data
-    #         print("Request data:", data)
-
-    #         table_id = data.get('table_number')
-    #         if not table_id:
-    #             return Response({"error": "No table number provided."}, status=status.HTTP_400_BAD_REQUEST)
-            
-    #         table = get_object_or_404(Table, pk=table_id)  
-
-    #         print("table",table)
-            
-    #         date = data.get('reservation_date')
-    #         start_time = data.get('reservation_time')
-    #         end_time = data.get('reservation_end_time')
-
-    #         is_booked = Reservation.objects.filter(
-    #             table_id=table_id,
-    #             reservation_date=date,
-    #             reservation_time__lt=end_time,
-    #             reservation_end_time__gt=start_time
-    #         ).exists()
-
-    #         if is_booked:
-    #             return Response(
-    #                 {"error": "This table is already booked for the selected time."},
-    #                 status=status.HTTP_400_BAD_REQUEST
-    #             )
-
-    #         data['table'] = table.id 
-
-    #         serializer = ReservationSerializer(data=data)
-    #         if serializer.is_valid():
-    #             serializer.save()
-    #             return Response({"message": "Reservation created", "data": serializer.data}, status=status.HTTP_201_CREATED)
-    #         else:
-    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    #     except Exception as e:
-    #         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
@@ -376,6 +436,11 @@ class OrderAPIView(APIView):
         
         total_price = sum(item.food.price * item.quantity for item in cart_items)
 
+        existing_order = Order.objects.filter(user=user, status='Paid').first()
+        if existing_order:
+            cart_items.delete()
+            return Response({'error': 'This order has already been paid.'}, status=status.HTTP_400_BAD_REQUEST)
+
         order_data = {
             'user': user,
             'total_price': total_price,
@@ -384,8 +449,7 @@ class OrderAPIView(APIView):
         
         for item in cart_items:
             order.items.create(food=item.food, quantity=item.quantity)
-        
-        # Empty the cart after placing the order
+    
         cart_items.delete()
 
         return Response({'message': 'Order placed successfully', 'order_id': order.id}, status=status.HTTP_201_CREATED)
@@ -468,7 +532,7 @@ class OrderStatusAPIView(APIView):
 
 # # Payment API
 class PaymentAPIView(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticatedOrReadOnly]
 
     def get(self,request):
         payments=Payment.objects.filter(user=request.user).all()
@@ -481,7 +545,6 @@ class PaymentAPIView(APIView):
         amount = data.get('amount')
         payment_method = data.get('payment_method')
         restaurant_id = data.get('restaurant_id')
-        # customer_contact = data.get('customer_contact')
 
         if not items or not amount or not payment_method or not restaurant_id or not request.user:
             return Response(
@@ -503,39 +566,13 @@ class PaymentAPIView(APIView):
                 {"success": False, "error": "Invalid payment method."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        
 
         try:
-            # Check if a similar unpaid order already exists
-            # if not customer_contact or not customer_name:
-            #     return Response(
-            #         {"success": False, "error": "Missing customer information."},
-            #         status=status.HTTP_400_BAD_REQUEST
-            #     )
-            
-            existing_order = Order.objects.filter(
-                restaurant=restaurant,
-                customer_name=request.user,# use it when User model Inherits
-                # customer_name=customer_name,
-                # customer_contact=customer_contact,
-                status='Completed',
-                items__food__in=[item['id'] for item in items]
-            ).distinct().first()
-
-            if existing_order:
-                existing_payment = Payment.objects.filter(order=existing_order).first()
-                if existing_payment and existing_payment.is_paid:
-                    return Response(
-                        {"success": False, "error": "This order has already been paid."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
             with transaction.atomic():
                 order = Order.objects.create(
                     restaurant=restaurant,
                     customer_name=request.user,
-                    status='Completed',
+                    status='Completed',  # Or use 'Pending' if payment happens later
                 )
 
                 for item in items:
@@ -563,17 +600,16 @@ class PaymentAPIView(APIView):
                     is_paid=True
                 )
 
-                # Clear user's cart after initiating payment
-                CartItem.objects.filter(user=request.user).delete() #use it when User Model Inheirts in models.py
-                # CartItem.objects.filter(customer_contact=customer_contact).delete()
+                # Clear user's cart
+                CartItem.objects.filter(user=request.user).delete()
 
                 return Response(
                     {
                         "success": True,
                         "order_id": order.id,
                         "payment_id": payment.id,
-                        "is_paid":True,
-                        "message": "Order and payment initiated successfully."
+                        "is_paid": True,
+                        "message": "Order and payment processed successfully."
                     },
                     status=status.HTTP_201_CREATED
                 )
@@ -583,61 +619,6 @@ class PaymentAPIView(APIView):
                 {"success": False, "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-# class PaymentAPIView(APIView):
-#     permission_classes=[IsAuthenticated]
-
-#     def get(self, request):
-#         payments = Payment.objects.all()
-#         serializer = PaymentSerializer(payments, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request):
-#         data = request.data
-#         payment_method = data.get("payment_method")
-#         items = data.get("order",[])
-
-#         if Payment.objects.filter(order=items).exists():
-#             return Response({"error": "Payment already exists"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         if payment_method == "Stripe":
-#             payment_intent_id = data.get("payment_intent_id")
-            
-#             if not payment_intent_id:
-#                 return Response({"error": "Missing payment_intent_id"}, status=status.HTTP_400_BAD_REQUEST)
-
-#             try:
-#                 intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-
-#                 if intent.status != "succeeded":
-#                     return Response({"error": "Payment not completed"}, status=status.HTTP_400_BAD_REQUEST)
-
-#                 data["amount"] = intent.amount / 100  
-#                 data["currency"] = intent.currency
-#                 data["stripe_id"] = intent.id
-#                 data["is_paid"] = True
-#                 data["payment_method"] = intent.payment_method
-
-#             except stripe.error.StripeError as e:
-#                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-#         elif payment_method in ["Cash", "UPI", "Bank Transfer"]:
-#             if not data.get("amount"):
-#                 return Response({"error": "Amount is required for non-Stripe payments"}, status=status.HTTP_400_BAD_REQUEST)
-
-#             data["is_paid"] = True
-#             data["stripe_id"] = None  
-#             data["currency"] = data.get("currency", "INR") 
-
-#         else:
-#             return Response({"error": "Unsupported payment method"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         serializer = PaymentSerializer(data=data)
-#         if serializer.is_valid():
-#             payment = serializer.save()
-#             return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #  Receipt API (PDF Generation)
 class GenerateReceiptAPIView(APIView):

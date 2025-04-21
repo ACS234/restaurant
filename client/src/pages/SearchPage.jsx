@@ -44,7 +44,7 @@ const SearchResultsPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen p-4">
-      <div className="mt-24 max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold mb-6 text-gray-800">
           Search Results for "<span className="text-teal-600">{name}</span>"
         </h2>
