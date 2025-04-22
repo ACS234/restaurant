@@ -52,6 +52,7 @@ class FoodSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     total_amount = serializers.SerializerMethodField()
     duration=serializers.SerializerMethodField()
+    time_left = serializers.ReadOnlyField()
     class Meta:
         model=Reservation
         fields='__all__'
@@ -113,7 +114,6 @@ class QRCodeSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(f"/qrcode/?table_number={table_number}")
         return None
     
-
 
 class OrderItemSerializer(serializers.ModelSerializer):
     foods = FoodSerializer(many=True, read_only=True)

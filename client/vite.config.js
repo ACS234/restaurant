@@ -8,4 +8,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  theme: {
+    extend: {
+      aspectRatio: {
+        square: '1 / 1',
+      }
+    }
+  },
+  extend: {
+    animation: {
+      'spin-slow': 'spin 15s linear infinite',
+    },
+  }
+  
 })

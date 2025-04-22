@@ -1,74 +1,172 @@
 import React, { useEffect, useState } from 'react';
-import { getFoods, addCart } from '../services/apiServices'; 
+import { getFoods, addCart } from '../services/apiServices';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FaCartArrowDown } from "react-icons/fa";
+import { BsThreeDots } from "react-icons/bs";
+import Sidebar from '../layout/Sidebar';
 
 const FoodPage = () => {
-    const [foods, setFoods] = useState([]);
-    const navigate = useNavigate();
+  const [foods, setFoods] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const navigate = useNavigate();
 
+  useEffect(() => {
     const fetchFoods = async () => {
-        try {
-            const data = await getFoods();
-            setFoods(data);
-        } catch (error) {
-            toast.error(error.message);
-        } 
+      try {
+        const data = await getFoods();
+        setFoods(data);
+      } catch (error) {
+        toast.error(error.message);
+      }
     };
-    useEffect(() => {
-        fetchFoods();
-    }, []);
+    fetchFoods();
+  }, []);
 
-    const handleAddToCart = async (foodId) => {
-        try {
-            const result = await addCart({ food: foodId });
-            if (result) {
-                toast.success("Item added to cart!");
-                setTimeout(() => {
-                    navigate('/cart');
-                }, 2000);
-            }
-        } catch (error) {
-            toast.error("Please logged In");
-            console.error(error);
-        }
-    };
+  const handleAddToCart = async (foodId) => {
+    const imgEl = document.getElementById(`fly-img-${foodId}`);
+    const cartIcon = document.querySelector("nav div");
 
-    return (
-        <div className="bg-gray-400 min-h-screen">
-            <ToastContainer />
-            <section className="py-8 px-2">
-                <div className="max-w-7xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-4">Our Menu</h2>
-                    <hr className="mb-6 border-t border-gray-300" />
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {foods.map((menuItem) => (
-                            <div key={menuItem.id} className="bg-cyan-950 p-3 rounded-md shadow text-sm">
-                                <img
-                                    src={`http://localhost:8000/${menuItem.image}`}
-                                    alt={menuItem.name}
-                                    className="w-full h-80 sm:h-40 md:h-40 object-cover rounded mb-2"
-                                />
-                                <h3 className="font-semibold text-sm mb-1">{menuItem.name} | {menuItem.restaurants[0].name }</h3>
-                                <p className="text-gray-600 mb-1 truncate">{menuItem.description}</p>
-                                <div className="mb-1">
-                                    <span className="font-semibold text-yellow-500">Rating:</span> {menuItem.rating} / 5
-                                </div>
-                                <p><strong>Price:</strong> ₹{menuItem.price}</p>
-                                <button
-                                    onClick={() => handleAddToCart(menuItem.id)}
-                                    className="mt-3 w-full py-1 bg-green-500 text-white rounded cursor-pointer hover:bg-green-600 text-xs"
-                                >
-                                    <FaCartArrowDown size={20}/>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+    if (imgEl && cartIcon) {
+      const rectStart = imgEl.getBoundingClientRect();
+      const rectEnd = cartIcon.getBoundingClientRect();
+
+      imgEl.style.top = `${rectStart.top}px`;
+      imgEl.style.left = `${rectStart.left}px`;
+      imgEl.classList.remove("hidden");
+
+      imgEl.animate([
+        { transform: 'translate(0, 0)', opacity: 1 },
+        { transform: `translate(${rectEnd.left - rectStart.left}px, ${rectEnd.top - rectStart.top}px)`, opacity: 0.1 }
+      ], {
+        duration: 800,
+        easing: 'ease-in-out'
+      }).onfinish = () => {
+        imgEl.classList.add("hidden");
+      };
+    }
+
+    try {
+      const result = await addCart({ food: foodId });
+      if (result) {
+        setCartCount((prev) => prev + 1);
+        toast.success("Item added to cart!");
+      }
+    } catch (error) {
+      toast.error("Please log in first.", error);
+    }
+  };
+
+  const handleShowDetails = (foodItem) => {
+    setSelectedFood(foodItem);
+    setShowModal(true);
+  };
+
+  return (
+    <div className="relative bg-gradient-to-br from-[#18303a] via-[#203a43] to-[#2c5364] min-h-screen py-24 px-4 text-white">
+      <Sidebar cartCount={cartCount} />
+      <ToastContainer />
+      <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
+          Taste the Difference
+        </h1>
+        <p className="mt-2 text-lg text-gray-200 max-w-xl mx-auto">
+          Discover handcrafted dishes made with love. Fast delivery. Fresh ingredients. Satisfaction guaranteed.
+        </p>
+        <button
+          onClick={() => navigate('/menu')}
+          className="mt-6 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold rounded-lg shadow-lg transition-all"
+        >
+          Explore Menu
+        </button>
+      </section>
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {foods.map((menuItem) => (
+            <div
+              key={menuItem.id}
+              className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between"
+            >
+              <button 
+                onClick={() => handleShowDetails(menuItem)} 
+                className="absolute top-2 right-2 text-white hover:text-gray-300"
+              >
+                <BsThreeDots size={20} color='re' />
+              </button>
+
+              <img
+                src={`http://localhost:8000/${menuItem.image}`}
+                alt={menuItem.name}
+                className="w-full h-48 object-cover rounded-md mb-3"
+              />
+              
+              <img
+                src={`http://localhost:8000/${menuItem.image}`}
+                alt=""
+                id={`fly-img-${menuItem.id}`}
+                className="w-12 h-12 object-cover fixed z-[9999] hidden rounded-full"
+              />
+              <h3 className="font-semibold text-md truncate">{menuItem.name} | {menuItem.restaurants[0]?.name}</h3>
+              <div className="text-yellow-400 text-sm mb-1">
+                {"★".repeat(Math.round(menuItem.rating || 0)).padEnd(5, "☆")}
+                <span className="text-gray-300 ml-1">({menuItem.rating ?? "0.0"})</span>
+              </div>
+              <p className="mb-3">
+                <span className="inline-block bg-green-500 px-3 py-1 rounded-full text-sm text-white font-bold shadow">
+                  ₹{menuItem.price}
+                </span>
+              </p>
+              <button
+                onClick={() => handleAddToCart(menuItem.id)}
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 rounded-md transition-all duration-300"
+              >
+                <FaCartArrowDown />
+                Add to Cart
+              </button>
+            </div>
+          ))}
         </div>
-    );
+      </div>
+      {showModal && selectedFood && (
+        <div className="fixed inset-0 z-50 bg-opacity-10 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md relative">
+            <button 
+              onClick={() => setShowModal(false)} 
+              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+            >
+              ✕
+            </button>
+            <img
+              src={`http://localhost:8000/${selectedFood.image}`}
+              alt={selectedFood.name}
+              className="w-full h-48 object-cover rounded-md mb-4"
+            />
+            <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedFood.name}</h2>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">Restaurant:</span> {selectedFood.restaurants[0]?.name}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">Price:</span> ₹{selectedFood.price}
+            </p>
+            <p className="text-sm text-yellow-500 mb-3">
+              {"★".repeat(Math.round(selectedFood.rating || 0)).padEnd(5, "☆")} ({selectedFood.rating ?? "0.0"})
+            </p>
+            <button 
+              onClick={() => {
+                handleAddToCart(selectedFood.id);
+                setShowModal(false);
+              }}
+              className="w-full py-2 mt-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default FoodPage;

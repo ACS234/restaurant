@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { getMenuDetail, addCart } from '../services/apiServices';
 import { toast } from 'react-toastify';
@@ -11,7 +12,6 @@ const MenuDetail = () => {
   const [menuItem, setMenuDetail] = useState([]);
   const [foodItem, setFoodDetail] = useState([]);
   const [restaurantName, setRestaurantName] = useState([]);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,7 +28,6 @@ const MenuDetail = () => {
     if (id) getDetail(id);
   }, [id]);
 
- 
   const handleAddToCart = async (foodId) => {
     const data = { food: foodId };
     const result = await addCart(data);
@@ -38,77 +37,95 @@ const MenuDetail = () => {
     }
   };
 
-  const handleOrder=()=>{
-    toast.success("go to order page")
-    navigate('/order')
-  }
+  const handleOrder = () => {
+    toast.success("Go to order page");
+    navigate('/order');
+  };
 
-  const handleBack=()=>{
-    navigate("/menu")
-  }
+  const handleBack = () => {
+    navigate("/menu");
+  };
 
   return (
-    <section className="py-12 px-4 bg-gray-100">
-      
-      <div className="max-w-7xl mx-auto mt-20">
-      <button
-        onClick={()=>{handleBack()}}
-          className="px-4 py-2 bg-gray-500 cursor-pointer text-white text-xs rounded hover:bg-gray-600"
+    
+    // <section className="py-12 px-6 min-h-screen bg-gradient-to-tr from-purple-100 via-blue-200 to-pink-100">
+    //<section className="py-12 px-6 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white">
+    //<section className="relative bg-[#0f2027] text-white overflow-hidden py-12 px-6 min-h-screen">
+    // <div className="absolute top-0 left-0 w-full h-full z-0">
+    // <div className="bg-gradient-radial from-[#2c5364] via-[#203a43] to-[#0f2027] w-full h-full animate-pulse opacity-60"></div>
+    //</div> 
+    // <section className="py-12 px-6 min-h-screen bg-gradient-to-br from-white/10 via-white/20 to-white/10 backdrop-blur-md">
+    <section className="py-12 px-6 min-h-screen bg-gradient-to-br from-[#e0eafc] via-[#cfdef3] to-[#e0eafc]">
+      <div className="max-w-7xl mx-auto mt-20 relative">
+        <button
+          onClick={handleBack}
+          className="absolute -top-12 left-0 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition"
         >
           <TbArrowBackUp size={20} />
         </button>
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">{menuItem.name}</h2>
 
-        <img
-          src={`http://localhost:8000${menuItem.image}`}
-          alt={menuItem.title}
-          className="w-full h-64 md:h-96 object-cover rounded-lg mb-6"
-        />
+        <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-600 mb-6">
+          {menuItem.name}
+        </h2>
 
-        <p className="text-lg md:text-xl font-medium text-gray-800 mb-6">{menuItem.description}</p>
+        <div className="overflow-hidden rounded-xl shadow-2xl">
+          <img
+            src={`http://localhost:8000${menuItem.image}`}
+            alt={menuItem.title}
+            className="w-full h-80 object-cover transition-transform duration-500 hover:scale-105"
+          />
+        </div>
 
-        <hr className="border-t-2 border-green-500 mb-6" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
+        <p className="text-xl font-medium text-gray-700 mt-6 mb-10 text-justify leading-relaxed">
+          {menuItem.description}
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
           {foodItem.map((item) => (
-            <div key={item.id} className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200">
-              <img
-                src={`http://localhost:8000/media/${item.image}`}
-                alt={item.name}
-                className="w-full h-40 object-cover rounded-lg mb-4"
-              />
+            <div
+              key={item.id}
+              className="aspect-square bg-[#17272d] border border-gray-200 rounded-xl shadow-2xl p-2 hover:scale-105 transition-all duration-300 flex flex-col justify-between backdrop-blur-sm"
+            >
+              <div className="aspect-square overflow-hidden rounded-md mb-3">
+                <img
+                  src={`http://localhost:8000/media/${item.image}`}
+                  alt={item.name}
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                />
+              </div>
+              <div className="space-y-1 text-gray-300 flex-1">
+                <h3 className="text-sm font-bold truncate">{item.name}</h3>
+                <p className="text-xs italic text-[#1c6f12] truncate">{restaurantName.name}</p>
+                <p className="text-sm"><strong>₹</strong> {item.price}</p>
 
-              <div className="text-left space-y-1 mb-3">
-                <p className="text-sm truncate"><strong>Name:</strong> {item.name}|{restaurantName.name}</p>
-                <p className="text-sm truncate"><strong>Price:</strong>₹ {item.price}</p>
-                <p className="text-sm flex items-center">
-                  <strong>Type:</strong>
-                  <span className={`ml-2 w-3 h-3 rounded-full ${item.is_vegetarian ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                </p>
-                <p className="text-sm flex items-center">
-                  <strong>Rating:</strong>
-                  <span className="ml-1">{item.rating}</span>
-                  <IoIosStarHalf className="ml-1 text-green-500" />
-                </p>
+                <div className="flex items-center text-xs">
+                  <span className={`w-3 h-3 rounded-full ${item.is_vegetarian ? 'bg-green-600' : 'bg-red-600'}`}></span>
+                </div>
+
+                <div className="flex items-center text-yellow-500 text-sm">
+                  <IoIosStarHalf className="mr-1" />
+                  {item.rating}
+                </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="mt-1 flex justify-between items-center">
                 <button
                   onClick={() => handleAddToCart(item.id)}
-                  className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                  className="flex items-center gap-1 px-3 py-2 text-xs font-semibold bg-green-500 text-white rounded-full shadow hover:bg-green-600"
                 >
-                  <FaCartArrowDown size={20}/>
+                  <FaCartArrowDown /> Add
                 </button>
                 <button
-                onClick={()=>{handleOrder()}}
-                  className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
+                  onClick={handleOrder}
+                  className="px-4 py-2 text-xs font-semibold bg-yellow-500 text-white rounded-full shadow hover:bg-yellow-600"
                 >
-                  Order Now
+                  Order
                 </button>
               </div>
             </div>
+
           ))}
         </div>
-
       </div>
     </section>
   );

@@ -1,10 +1,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.conf import settings
-import qrcode
-from io import BytesIO
 from django.utils import timezone
-from django.core.files.base import ContentFile
+from datetime import datetime, timedelta
+from django.utils.timezone import localtime, make_aware
+
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=255, unique=True,null=True, blank=True)
@@ -65,6 +65,7 @@ class Table(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='tables')
     table_number = models.IntegerField()
     seats = models.PositiveIntegerField()
+    is_available=models.BooleanField(default=True)
 
     def __str__(self):
         return f"Table {self.table_number} - {self.restaurant.name}"
@@ -93,11 +94,22 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Reservation for {self.customer_name} on {self.reservation_date} at {self.table} Paid {self.is_paid} Status {self.status}"
-    
+
     @property
     def is_expired(self):
-        now = timezone.now()
-        return now.time() > self.reservation_end_time and not self.is_paid
+        now = localtime()
+        reservation_datetime = make_aware(datetime.combine(self.reservation_date, self.reservation_end_time))
+        return now > reservation_datetime and not self.is_paid
+
+    @property
+    def time_left(self):
+        now = localtime()
+        end_datetime = make_aware(datetime.combine(self.reservation_date, self.reservation_end_time))
+        remaining = end_datetime - now
+        if remaining.total_seconds() < 0:
+            return "Expired"
+        return str(remaining)
+
 
 class Order(models.Model):
     STATUS_CHOICES = [

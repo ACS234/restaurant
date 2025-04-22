@@ -1,12 +1,11 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { ACCESS_TOKEN } from './constants'; 
-import ProtectedRoute from './components/Auth/ProtectedRoute';  
-import Sidebar from './layout/Navbar';
+import { ACCESS_TOKEN } from './constants';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import Sidebar from './layout/Sidebar'; 
 import Footer from './layout/Footer';
 import PaymentPage from './pages/PaymentPage';
 import QRManagementPage from './pages/QrManagementPage';
-// import QRHandler from './components/QrHandler';
 
 const Home = lazy(() => import('./components/Home'));
 const FoodPage = lazy(() => import('./pages/FoodPage'));
@@ -27,9 +26,9 @@ const GallerySection = lazy(() => import('./components/GallerySection'));
 const BookingSection = lazy(() => import('./components/BookingSection'));
 const ReviewSection = lazy(() => import('./components/ReviewSection'));
 
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
   // Check if the user is authenticated
@@ -44,7 +43,7 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem(ACCESS_TOKEN);
     setIsAuthenticated(false);
-    navigate('/login');
+    navigate('/login'); // Navigate to login page after logout
   };
 
   // Handle login status change
@@ -52,39 +51,60 @@ function App() {
     setIsAuthenticated(status);
   };
 
+  // Toggle sidebar open/close
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
   return (
     <>
-      <Sidebar isAuthenticated={isAuthenticated} handleLogout={handleLogout} loggedInUser={loggedInUser} />
-      <div className="ml-64">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/header" element={<Header />} />
-          <Route path="/starter" element={<StarterSection />} />
-          <Route path="/gallery" element={<GallerySection />} />
-          <Route path="/reviews" element={<ReviewSection />} />
+      <div className="flex">
+        <Sidebar
+          isAuthenticated={isAuthenticated}
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+          handleLogout={handleLogout}
+          loggedInUser={loggedInUser}
+        />
+        <div
+          className={`transition-all duration-300 p-0 flex-1 ${
+            isSidebarOpen ? "ml-64" : "ml-20"
+          }`}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/header" element={<Header />} />
+              <Route path="/starter" element={<StarterSection />} />
+              <Route path="/gallery" element={<GallerySection />} />
+              <Route path="/reviews" element={<ReviewSection />} />
 
-          <Route path="/" element={<Home />} />
-          <Route path="/foods" element={<FoodPage />} />
-          <Route path="/menu" element={<MenuSection />} />
-          <Route path="/menu-detail/:id" element={<MenuDetail />} />
-          <Route path="/food/:id" element={<FoodDetail />} />
-          <Route path="/cart" element={<ProtectedRoute><AddToCart /></ProtectedRoute>} />
-          <Route path="/booking" element={<ProtectedRoute><BookingSection /></ProtectedRoute>} />
-          <Route path="/order" element={<ProtectedRoute><OrderPage /></ProtectedRoute>} />
-          <Route path="/order-confirmation" element={<ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>} />
-          <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-          <Route path="/payment" element={<ProtectedRoute><PaymentPage/></ProtectedRoute>} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/reservations" element={<ProtectedRoute><Reservations/></ProtectedRoute>} />
-          <Route path="/qr_code" element={<ProtectedRoute><QRManagementPage/></ProtectedRoute>} />
-        </Routes>
-      </Suspense>
-      <Footer />
+              {/* Public routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/foods" element={<FoodPage />} />
+              <Route path="/menu" element={<MenuSection />} />
+              <Route path="/menu-detail/:id" element={<MenuDetail />} />
+              <Route path="/food/:id" element={<FoodDetail />} />
+              <Route path="/search" element={<SearchPage />} />
+
+              {/* Protected Routes */}
+              <Route path="/cart" element={<ProtectedRoute><AddToCart /></ProtectedRoute>} />
+              <Route path="/booking" element={<ProtectedRoute><BookingSection /></ProtectedRoute>} />
+              <Route path="/order" element={<ProtectedRoute><OrderPage /></ProtectedRoute>} />
+              <Route path="/order-confirmation" element={<ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>} />
+              <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+              <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+              <Route path="/reservations" element={<ProtectedRoute><Reservations /></ProtectedRoute>} />
+              <Route path="/qr_code" element={<ProtectedRoute><QRManagementPage /></ProtectedRoute>} />
+            </Routes>
+          </Suspense>
+          <Footer />
+        </div>
       </div>
     </>
   );
 }
 
 export default App;
+

@@ -350,48 +350,41 @@ class CartDetailAPIView(APIView):
         return Response({"message": "Cart Item Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 class ReservationAPIView(APIView):
-    # permission_classes = [IsA] 
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            today = timezone.now().date()
-            current_time = timezone.now().time()
+            now = timezone.localtime()
+            today = now.date()
 
-            expired_reservations = Reservation.objects.filter(
-                reservation_date=today,# get the date from db
-                reservation_end_time__lte=current_time,# get the date from db
-                status='booked',
-                is_paid=False
-            )
-            expired_serializer = ReservationSerializer(expired_reservations, many=True)
-
-            for reservation in expired_reservations:
-                if hasattr(reservation, 'table'):
+            # Clean up expired reservations
+            for reservation in Reservation.objects.filter(status='booked'):
+                if reservation.is_expired:
                     reservation.table.is_available = True
                     reservation.table.save()
-            expired_reservations.delete()
+                    reservation.delete()  
 
             active_reservations = Reservation.objects.filter(
                 reservation_date__gte=today,
                 status='booked'
             ).order_by('reservation_date', 'reservation_time')
-            
+
             inactive_reservations = Reservation.objects.filter(
                 status='unbooked'
             ).order_by('reservation_date', 'reservation_time')
 
+            inactive_reservations.delete()
+
             return Response({
-                "expired_reservations": expired_serializer.data,
                 "active_reservations": ReservationSerializer(active_reservations, many=True).data,
                 "inactive_reservations": ReservationSerializer(inactive_reservations, many=True).data,
-                "message": "Expired reservations deleted, tables freed, and active reservations listed."
+                "message": "Expired reservations deleted and tables freed."
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
@@ -401,12 +394,12 @@ class ReservationAPIView(APIView):
             time = serializer.validated_data['reservation_time']
             end_time = serializer.validated_data['reservation_end_time']
 
-            # Check if the table is already booked at this date and time
             is_booked = Reservation.objects.filter(
                 table=table,
                 reservation_date=date,
                 reservation_time=time,
-                reservation_end_time=end_time
+                reservation_end_time=end_time,
+                status='booked'
             ).exists()
 
             if is_booked:
@@ -414,6 +407,10 @@ class ReservationAPIView(APIView):
                     {'error': 'This table is already booked at the selected date and time.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+
+            # Mark table unavailable
+            table.is_available = False
+            table.save()
 
             serializer.save()
             return Response({'message': 'Booking submitted!'}, status=status.HTTP_201_CREATED)
