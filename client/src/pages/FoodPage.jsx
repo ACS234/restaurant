@@ -8,7 +8,6 @@ import Sidebar from '../layout/Sidebar';
 
 const FoodPage = () => {
   const [foods, setFoods] = useState([]);
-  const [cartCount, setCartCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
   const navigate = useNavigate();
@@ -21,38 +20,19 @@ const FoodPage = () => {
       } catch (error) {
         toast.error(error.message);
       }
+
     };
     fetchFoods();
   }, []);
 
   const handleAddToCart = async (foodId) => {
-    const imgEl = document.getElementById(`fly-img-${foodId}`);
-    const cartIcon = document.querySelector("nav div");
-
-    if (imgEl && cartIcon) {
-      const rectStart = imgEl.getBoundingClientRect();
-      const rectEnd = cartIcon.getBoundingClientRect();
-
-      imgEl.style.top = `${rectStart.top}px`;
-      imgEl.style.left = `${rectStart.left}px`;
-      imgEl.classList.remove("hidden");
-
-      imgEl.animate([
-        { transform: 'translate(0, 0)', opacity: 1 },
-        { transform: `translate(${rectEnd.left - rectStart.left}px, ${rectEnd.top - rectStart.top}px)`, opacity: 0.1 }
-      ], {
-        duration: 800,
-        easing: 'ease-in-out'
-      }).onfinish = () => {
-        imgEl.classList.add("hidden");
-      };
-    }
-
     try {
       const result = await addCart({ food: foodId });
       if (result) {
-        setCartCount((prev) => prev + 1);
         toast.success("Item added to cart!");
+        setTimeout(()=>{
+          navigate('/cart')
+        },2000)
       }
     } catch (error) {
       toast.error("Please log in first.", error);
@@ -65,8 +45,7 @@ const FoodPage = () => {
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-[#18303a] via-[#203a43] to-[#2c5364] min-h-screen py-24 px-4 text-white">
-      <Sidebar cartCount={cartCount} />
+    <div className="relative bg-[#3e7ea6d7] min-h-screen py-24 px-4 text-white">
       <ToastContainer />
       <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
         <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
@@ -120,7 +99,7 @@ const FoodPage = () => {
               </p>
               <button
                 onClick={() => handleAddToCart(menuItem.id)}
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2 rounded-md transition-all duration-300"
+                className="flex items-center justify-center gap-2 bg-[#ffb237] text-white font-semibold py-2 rounded-md transition-all duration-300"
               >
                 <FaCartArrowDown />
                 Add to Cart
@@ -131,7 +110,7 @@ const FoodPage = () => {
       </div>
       {showModal && selectedFood && (
         <div className="fixed inset-0 z-50 bg-opacity-10 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md relative">
+          <div className="bg-[#FFB337] rounded-lg shadow-lg p-6 w-[90%] max-w-md relative">
             <button 
               onClick={() => setShowModal(false)} 
               className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
@@ -148,9 +127,18 @@ const FoodPage = () => {
               <span className="font-semibold">Restaurant:</span> {selectedFood.restaurants[0]?.name}
             </p>
             <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">Description:</span> {selectedFood.description}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">Ingredients:</span> {selectedFood.ingredients}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">Cuisine Type:</span> {selectedFood.cuisine_type}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
               <span className="font-semibold">Price:</span> ₹{selectedFood.price}
             </p>
-            <p className="text-sm text-yellow-500 mb-3">
+            <p className="text-sm text-gray-500 mb-3">
               {"★".repeat(Math.round(selectedFood.rating || 0)).padEnd(5, "☆")} ({selectedFood.rating ?? "0.0"})
             </p>
             <button 

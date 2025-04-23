@@ -5,7 +5,7 @@ const OrderConfirmationPage = () => {
   const navigate = useNavigate();
 
   const handleGoHome = () => {
-    navigate('/'); // Redirect to home page or any other page after order is placed
+    navigate('/');
   };
 
   return (

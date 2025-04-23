@@ -1,7 +1,7 @@
 import React from 'react';
 import img from '../assets/img_3.jpg';
-import img1 from '../assets/img_4.jpg';
-import img2 from '../assets/img_5.jpg';
+import myself from '../assets/myself.jpg';
+import img2 from '../assets/priyesh.jpeg';
 import { FaStar,FaStarHalf } from 'react-icons/fa';
 
 const ReviewsSection = () => {
@@ -18,7 +18,7 @@ const ReviewsSection = () => {
       <div className="flex flex-wrap justify-center gap-4">
         <div className="bg-white p-8 rounded-xl shadow-lg max-w-xs transition-transform transform hover:scale-105 hover:shadow-2xl duration-300">
           <img src={img} alt="User 1" className="w-20 h-20 rounded-full mx-auto border-4 border-indigo-500 shadow-lg" />
-          <p className="mt-6 text-lg font-medium text-gray-800">"The food was absolutely amazing! Highly recommend the pasta."</p>
+          <p className="mt-6 text-lg font-medium text-">"The food was absolutely amazing! Highly recommend the pasta."</p>
           <div className="mt-4 text-gray-600 flex items-center justify-center">
             <span>- Rejesh Kumar</span>
             <div className="flex text-yellow-400 ml-2">
@@ -32,7 +32,7 @@ const ReviewsSection = () => {
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-lg max-w-xs transition-transform transform hover:scale-105 hover:shadow-2xl duration-300">
-          <img src={img1} alt="User 2" className="w-20 h-20 rounded-full mx-auto border-4 border-indigo-500 shadow-lg" />
+          <img src={myself} alt="User 2" className="w-20 h-20 rounded-full mx-auto border-4 border-indigo-500 shadow-lg" />
           <p className="mt-6 text-lg font-medium text-gray-800">"A fantastic dining experience, the ambiance was perfect."</p>
           <div className="mt-4 text-gray-600 flex items-center justify-center">
             <span>- Naurangi Lal</span>
@@ -51,6 +51,20 @@ const ReviewsSection = () => {
           <p className="mt-6 text-lg font-medium text-gray-800">"A wonderful experience, the food and service were top-notch!"</p>
           <div className="mt-4 text-gray-600 flex items-center justify-center">
             <span>- Priyesh</span>
+            <div className="flex text-yellow-400 ml-2">
+              <FaStar />
+              <FaStar />
+              <FaStar />
+              <FaStar />
+              <FaStarHalf />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-xs transition-transform transform hover:scale-105 hover:shadow-2xl duration-300">
+          <img src={img} alt="User 1" className="w-20 h-20 rounded-full mx-auto border-4 border-indigo-500 shadow-lg" />
+          <p className="mt-6 text-lg font-medium text-gray-800">"The food was absolutely amazing! Highly recommend the Chicken Pasta."</p>
+          <div className="mt-4 text-gray-600 flex items-center justify-center">
+            <span>- Abu Osama</span>
             <div className="flex text-yellow-400 ml-2">
               <FaStar />
               <FaStar />

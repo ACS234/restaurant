@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { getMenus } from '../services/apiServices';
+import { getMenus,addCart } from '../services/apiServices';
 import { useNavigate } from 'react-router-dom';
 import FoodPage from '../pages/FoodPage';
 import { MdOutlineMoreHoriz } from "react-icons/md";
@@ -40,13 +40,23 @@ const MenuSection = () => {
 
   const selectedMenu = menus.find((menu) => menu.id === selectedMenuId);
 
-  const handleAddToCart = (item) => {
-    toast.success(`Added ${item.name} to cart!`);
-  };
+  const handleAddToCart = async (foodId) => {
+      try {
+        const result = await addCart({ food: foodId });
+        if (result) {
+          toast.success("Item added to cart!");
+          setTimeout(()=>{
+            navigate('/cart')
+          },2000)
+        }
+      } catch (error) {
+        toast.error("Please log in first.", error);
+      }
+    };
 
   return (
     <>
-      <section className="relative py-12 px-4 min-h-screen text-white bg-gradient-to-br from-[#323f76] via-[#d88d8d] to-[#caa452] overflow-hidden">
+      <section className="relative py-10 px-4 min-h-screen text-white bg-[#90B274] overflow-hidden">
         <ToastContainer />
       
         <div className="relative z-10">
@@ -57,9 +67,9 @@ const MenuSection = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 justify-center">
             {menus.map((menu) => (
-              <div key={menu.id} className="flex flex-col items-center p-2 hover:scale-105 rounded-md space-y-2 hover:bg-blue-700">
+              <div key={menu.id} className="flex flex-col items-center p-2 hover:scale-105 rounded-md space-y-2 hover:bg-[#DDDDDE]">
                 <div
-                  className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-lg shadow-xl hover:scale-105 hover:w-24 hover:h-24 transition-transform overflow-hidden relative border border-white/30 ring-1 ring-white/10 cursor-pointer"
+                  className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-lg shadow-xl hover:scale-105 transition-transform overflow-hidden relative border border-white/30 ring-1 ring-white/10 cursor-pointer"
                   onClick={() => handleMenuClick(menu.id)}
                 >
                   <img
@@ -75,7 +85,7 @@ const MenuSection = () => {
                 <button
                   aria-label={`View details for ${menu.name}`}
                   onClick={() => menuDetail(menu.id)}
-                  className="flex items-center justify-center cursor-pointer px-2 py-1 text-sm bg-white/10 hover:bg-white/20 rounded-full transition-all text-white backdrop-blur-md shadow-md"
+                  className="flex items-center justify-center cursor-pointer px-2 py-1 text-sm bg-[#FF7C71] hover:bg-white/20 rounded-full transition-all text-white backdrop-blur-md shadow-md"
                 >
                   <MdOutlineMoreHoriz size={20} />
                 </button>
@@ -84,17 +94,16 @@ const MenuSection = () => {
           </div>
 
           {selectedMenuId && selectedMenu && (
-            <div className="mt-20 mx-auto max-w-6xl">
-              <h3 className="text-3xl font-semibold mb-8 text-center">
+            <div className="mt-10 mx-auto max-w-6xl">
+              <h3 className="text-3xl font-semibold mb-4 text-center">
                 {selectedMenu.name} Items
               </h3>
-
               {selectedMenu.foods && selectedMenu.foods.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {selectedMenu.foods.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl p-5 flex flex-col justify-between hover:scale-105 transition-transform"
+                      className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl p-2 flex flex-col justify-between hover:scale-105 transition-transform"
                     >
                       <div>
                         <img
@@ -105,7 +114,7 @@ const MenuSection = () => {
                         <h4 className="text-xl font-semibold mb-2">{item.name}</h4>
                         <p className="text-gray-200 text-sm mb-3">{item.description}</p>
                         <div className="text-white font-semibold text-sm mb-1">
-                          <span className="bg-gradient-to-r from-green-400 to-blue-500 px-4 py-1 rounded-full shadow-md">
+                          <span className="bg-green-400 px-4 py-1 text-black rounded-full shadow-md">
                             ₹ {item.price}
                           </span>
                         </div>
@@ -116,8 +125,8 @@ const MenuSection = () => {
                       </div>
 
                       <button
-                        className="mt-auto text-white text-sm font-medium py-2 px-4 rounded bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition duration-200 shadow-md"
-                        onClick={() => handleAddToCart(item)}
+                        className="mt-auto text-white text-sm font-medium py-2 px-4 rounded bg-[#FF7C71] hover:bg-[#262416] transition duration-200 shadow-md"
+                        onClick={() => handleAddToCart(item.foodId)}
                       >
                         Add to Cart
                       </button>

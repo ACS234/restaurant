@@ -34,7 +34,7 @@ const MyReservations = () => {
   return (
     <>
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">My Reservations</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Active Reservations</h2>
 
       {active_reservations.length === 0 ? (
         <p className="text-gray-600">You have no reservations.</p>

@@ -112,7 +112,7 @@ const BookingSection = () => {
             >
               <option value="">Select a table</option>
               {availableTables.map((table) => (
-                <option key={table.id} value={table.table_number}>
+                <option key={table.id} value={table.table_number} className='bg-gray-400'>
                   Table {table.table_number} (Seats: {table.seats})
                 </option>
               ))}
