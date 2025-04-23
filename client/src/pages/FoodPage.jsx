@@ -4,7 +4,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FaCartArrowDown } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
-import Sidebar from '../layout/Sidebar';
 
 const FoodPage = () => {
   const [foods, setFoods] = useState([]);
@@ -20,7 +19,6 @@ const FoodPage = () => {
       } catch (error) {
         toast.error(error.message);
       }
-
     };
     fetchFoods();
   }, []);
@@ -30,12 +28,12 @@ const FoodPage = () => {
       const result = await addCart({ food: foodId });
       if (result) {
         toast.success("Item added to cart!");
-        setTimeout(()=>{
-          navigate('/cart')
-        },2000)
+        setTimeout(() => {
+          navigate('/cart');
+        }, 2000);
       }
     } catch (error) {
-      toast.error("Please log in first.", error);
+      toast.error("Please log in first.",error);
     }
   };
 
@@ -48,7 +46,7 @@ const FoodPage = () => {
     <div className="relative bg-[#3e7ea6d7] min-h-screen py-24 px-4 text-white">
       <ToastContainer />
       <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
-        <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
           Taste the Difference
         </h1>
         <p className="mt-2 text-lg text-gray-200 max-w-xl mx-auto">
@@ -61,42 +59,49 @@ const FoodPage = () => {
           Explore Menu
         </button>
       </section>
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+      <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {foods.map((menuItem) => (
             <div
               key={menuItem.id}
               className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between"
             >
-              <button 
-                onClick={() => handleShowDetails(menuItem)} 
+              <button
+                onClick={() => handleShowDetails(menuItem)}
                 className="absolute top-2 right-2 text-white hover:text-gray-300"
               >
-                <BsThreeDots size={20} color='re' />
+                <BsThreeDots size={20} color='yellow' />
               </button>
 
               <img
                 src={`http://localhost:8000/${menuItem.image}`}
                 alt={menuItem.name}
-                className="w-full h-48 object-cover rounded-md mb-3"
+                className="w-full h-36 sm:h-44 md:h-48 object-cover rounded-md mb-3"
               />
-              
+
               <img
                 src={`http://localhost:8000/${menuItem.image}`}
                 alt=""
                 id={`fly-img-${menuItem.id}`}
                 className="w-12 h-12 object-cover fixed z-[9999] hidden rounded-full"
               />
-              <h3 className="font-semibold text-md truncate">{menuItem.name} | {menuItem.restaurants[0]?.name}</h3>
+
+              <h3 className="font-semibold text-md truncate">
+                {menuItem.name} | {menuItem.restaurants[0]?.name}
+              </h3>
+
               <div className="text-yellow-400 text-sm mb-1">
                 {"★".repeat(Math.round(menuItem.rating || 0)).padEnd(5, "☆")}
                 <span className="text-gray-300 ml-1">({menuItem.rating ?? "0.0"})</span>
               </div>
+
               <p className="mb-3">
                 <span className="inline-block bg-green-500 px-3 py-1 rounded-full text-sm text-white font-bold shadow">
                   ₹{menuItem.price}
                 </span>
               </p>
+
               <button
                 onClick={() => handleAddToCart(menuItem.id)}
                 className="flex items-center justify-center gap-2 bg-[#ffb237] text-white font-semibold py-2 rounded-md transition-all duration-300"
@@ -108,12 +113,13 @@ const FoodPage = () => {
           ))}
         </div>
       </div>
+
       {showModal && selectedFood && (
-        <div className="fixed inset-0 z-50 bg-opacity-10 flex items-center justify-center">
-          <div className="bg-[#FFB337] rounded-lg shadow-lg p-6 w-[90%] max-w-md relative">
-            <button 
-              onClick={() => setShowModal(false)} 
-              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+        <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center px-4">
+          <div className="bg-[#FFB337] rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-2 right-2 text-gray-700 hover:text-black text-xl"
             >
               ✕
             </button>
@@ -141,7 +147,7 @@ const FoodPage = () => {
             <p className="text-sm text-gray-500 mb-3">
               {"★".repeat(Math.round(selectedFood.rating || 0)).padEnd(5, "☆")} ({selectedFood.rating ?? "0.0"})
             </p>
-            <button 
+            <button
               onClick={() => {
                 handleAddToCart(selectedFood.id);
                 setShowModal(false);

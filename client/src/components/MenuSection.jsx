@@ -63,11 +63,11 @@ const MenuSection = () => {
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-white text-center mb-8">
             Our Menu
           </h2>
-          <hr className="w-1/2 mx-auto my-6 border-t-2 border-dashed border-yellow-200" />
+          <hr className="w-1/3 mx-auto my-6 border-t-2 border-dashed border-yellow-200" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 justify-center">
+          <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 justify-center">
             {menus.map((menu) => (
-              <div key={menu.id} className="flex flex-col items-center p-2 hover:scale-105 rounded-md space-y-2 hover:bg-[#DDDDDE]">
+              <div key={menu.id} className="flex flex-col items-center p-2 hover:scale-105 rounded-md space-y-2 hover:bg-[#bcbcc3]">
                 <div
                   className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-lg shadow-xl hover:scale-105 transition-transform overflow-hidden relative border border-white/30 ring-1 ring-white/10 cursor-pointer"
                   onClick={() => handleMenuClick(menu.id)}
@@ -94,12 +94,12 @@ const MenuSection = () => {
           </div>
 
           {selectedMenuId && selectedMenu && (
-            <div className="mt-10 mx-auto max-w-6xl">
-              <h3 className="text-3xl font-semibold mb-4 text-center">
+            <div className="mt-10 mx-auto max-w-4xl">
+              <h3 className="text-3xl font-semibold mb-4 text-center truncate">
                 {selectedMenu.name} Items
               </h3>
               {selectedMenu.foods && selectedMenu.foods.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                   {selectedMenu.foods.map((item) => (
                     <div
                       key={item.id}
@@ -111,8 +111,8 @@ const MenuSection = () => {
                           alt={item.name}
                           className="w-full h-48 object-cover rounded mb-4"
                         />
-                        <h4 className="text-xl font-semibold mb-2">{item.name}</h4>
-                        <p className="text-gray-200 text-sm mb-3">{item.description}</p>
+                        <h4 className="text-xl font-semibold mb-2 truncate">{item.name}</h4>
+                        <p className="text-gray-200 text-sm mb-3 truncate">{item.description}</p>
                         <div className="text-white font-semibold text-sm mb-1">
                           <span className="bg-green-400 px-4 py-1 text-black rounded-full shadow-md">
                             ₹ {item.price}
@@ -125,7 +125,7 @@ const MenuSection = () => {
                       </div>
 
                       <button
-                        className="mt-auto text-white text-sm font-medium py-2 px-4 rounded bg-[#FF7C71] hover:bg-[#262416] transition duration-200 shadow-md"
+                        className="mt-auto text-white text-sm font-medium py-2 px-4 rounded bg-[#de594d] hover:bg-[#262416] transition duration-200 shadow-md"
                         onClick={() => handleAddToCart(item.foodId)}
                       >
                         Add to Cart

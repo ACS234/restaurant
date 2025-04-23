@@ -68,7 +68,7 @@ function App() {
         />
         <div
           className={`transition-all duration-300 p-0 flex-1 ${
-            isSidebarOpen ? "ml-64" : "ml-20"
+            isSidebarOpen ? "ml-64" : "ml-14"
           }`}
         >
           <Suspense fallback={<div>Loading...</div>}>

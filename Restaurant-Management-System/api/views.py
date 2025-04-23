@@ -102,7 +102,7 @@ class RestaurantQRAPIView(APIView):
 class GenerateQRCodeView(APIView):
 
     def post(self, request):
-        table_id = request.data.get("table_id", None)
+        table_id = request.data.get("table_id")
         if not table_id:
             return Response({"error": "Table ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -357,7 +357,6 @@ class ReservationAPIView(APIView):
             now = timezone.localtime()
             today = now.date()
 
-            # Clean up expired reservations
             for reservation in Reservation.objects.filter(status='booked'):
                 if reservation.is_expired:
                     reservation.table.is_available = True
@@ -408,7 +407,6 @@ class ReservationAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Mark table unavailable
             table.is_available = False
             table.save()
 
