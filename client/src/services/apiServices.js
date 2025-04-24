@@ -87,12 +87,38 @@ export const getFood = async (id) => {
 
 export const getTable = async () => {
   try {
-    return await getData(`/api/get_table/`);
+    const res= await getData(`/api/get_table/`);
+    return res;
   } catch (error) {
     console.error('Something went wrong', error);
     throw error;
   }
 };
+
+
+export const getTableOrder = async () => {
+  try {
+    const res = await getData(`/api/menus/?table_number=1`);
+    console.log(res)
+    return res;
+  } catch (error) {
+    console.error('Something went wrong', error);
+    throw error;
+  }
+};
+
+
+export const searchItems = async (query) => {
+  try {
+    const res = await getData(`/api/foods/?name=${query}`);
+    console.log(res)
+    return res;
+  } catch (error) {
+    console.error('Something went wrong', error);
+    throw error;
+  }
+};
+
 
 export const getCart = async () => {
   try {

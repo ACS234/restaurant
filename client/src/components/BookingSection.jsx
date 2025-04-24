@@ -23,8 +23,8 @@ const BookingSection = () => {
   useEffect(() => {
     const fetchTable = async () => {
       try {
-        const response = await getTable();
-        setAvailableTables(response.data || []);
+        const data = await getTable();
+        setAvailableTables(data || []);
       } catch (error) {
         toast.error(`Failed to fetch table info: ${error.message}`);
       }
@@ -74,8 +74,8 @@ const BookingSection = () => {
   );
 
   return (
-    <section className="relative w-full h-auto min-h-screen sm:w-1/3 md:w-1/4 flex items-center justify-center px-4 py-20 text-white overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/images/restaurant.jpg')] bg-cover bg-center filter blur-sm scale-105" />
+    <section className="relative w-full h-auto min-h-screen flex items-center justify-center px-4 py-20 text-white overflow-hidden">
+      <div className="absolute inset-0 bg-cover bg-center filter blur-sm scale-105" />
       <div className="absolute inset-0 bg-gray-600 bg-opacity-60" />
       <div className="relative w-full max-w-3xl mx-auto z-10">
         <h2 className="text-4xl font-bold mb-8 text-white text-center">Reserve a Table</h2>

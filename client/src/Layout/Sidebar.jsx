@@ -4,17 +4,21 @@ import { IoMdPerson, IoIosContacts, IoMdLogIn } from "react-icons/io";
 import { FaCartArrowDown } from "react-icons/fa";
 import { GrServices } from "react-icons/gr";
 import { AiOutlineLogout, AiOutlineMenu, AiFillCaretLeft, AiFillCaretRight } from "react-icons/ai";
-import { IoHome, IoRestaurantOutline, IoFastFoodSharp,IoSettings, IoChevronDown, IoChevronForward } from "react-icons/io5";
+import { IoHome, IoRestaurantOutline, IoFastFoodSharp, IoSettings, IoChevronDown, IoChevronForward, IoSearch } from "react-icons/io5";
 import { FaRegAddressCard } from "react-icons/fa6";
 import { GiVendingMachine } from "react-icons/gi";
-import { RiMenuSearchFill,RiAdminFill } from "react-icons/ri";
+import { RiMenuSearchFill, RiAdminFill } from "react-icons/ri";
 import { RxDashboard } from "react-icons/rx";
 import { ImProfile } from "react-icons/im";
+import { MdTableRestaurant } from "react-icons/md";
+ 
+
 
 
 
 
 function Sidebar({ isAuthenticated, isSidebarOpen, toggleSidebar, handleLogout }) {
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   return (
@@ -71,15 +75,15 @@ function Sidebar({ isAuthenticated, isSidebarOpen, toggleSidebar, handleLogout }
                       : 'hidden'
                       }`}>
                       <Link to="/dashboard" className="flex items-center m-1 p-2 hover:bg-blue-950 rounded-md hover:text-indigo-400">
-                      <RxDashboard  size={25} />
+                        <RxDashboard size={25} />
                         {isSidebarOpen && <span className="ml-4">Dashboard</span>}
                       </Link>
                       <Link to="/settings" className="flex items-center m-1 p-2 hover:bg-blue-950 rounded-md hover:text-indigo-400">
-                      <IoSettings  size={25} />
-                      {isSidebarOpen && <span className="ml-4">Setting</span>}</Link>
+                        <IoSettings size={25} />
+                        {isSidebarOpen && <span className="ml-4">Setting</span>}</Link>
                       <Link to="/reservations" className="flex items-center m-1 p-2 hover:bg-blue-950 rounded-md hover:text-indigo-400">
-                      <ImProfile  size={25} />
-                      {isSidebarOpen && <span className="ml-4">Resevations</span>}</Link>
+                        <ImProfile size={25} />
+                        {isSidebarOpen && <span className="ml-4">Resevations</span>}</Link>
                     </div>
                   )}
                 </div>
@@ -107,13 +111,14 @@ function Sidebar({ isAuthenticated, isSidebarOpen, toggleSidebar, handleLogout }
                   <GiVendingMachine size={25} />
                   {isSidebarOpen && <span className="ml-4">Vendors</span>}
                 </Link>
-                <Link to="/services" className="flex items-center space-x-3 text-white hover:text-indigo-400">
+                <Link to="/table_order" className="flex items-center space-x-3 text-white hover:text-indigo-400">
                   <GrServices size={25} />
                   {isSidebarOpen && <span className="ml-4">Services</span>}
                 </Link>
-                <Link to="/reservations" className="flex items-center space-x-3 text-white hover:text-indigo-400">
-                  <FaRegAddressCard size={25} />
-                  {isSidebarOpen && <span className="ml-4">Reservations</span>}
+                <Link to="/qr_code" className="flex items-center space-x-3 text-white hover:text-indigo-400">
+                  <MdTableRestaurant
+                    size={25} />
+                  {isSidebarOpen && <span className="ml-4">Tables</span>}
                 </Link>
               </>
             ) : (

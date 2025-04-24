@@ -66,6 +66,7 @@ class Table(models.Model):
     table_number = models.IntegerField()
     seats = models.PositiveIntegerField()
     is_available=models.BooleanField(default=True)
+    qr_code = models.ImageField(upload_to="table-qrcodes/", blank=True, null=True)
 
     def __str__(self):
         return f"Table {self.table_number} - {self.restaurant.name}"

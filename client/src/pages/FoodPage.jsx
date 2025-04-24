@@ -1,15 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { getFoods, addCart } from '../services/apiServices';
+import { getFoods, addCart, searchItems } from '../services/apiServices';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FaCartArrowDown } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
+import { IoSearch } from "react-icons/io5";
 
 const FoodPage = () => {
-  const [foods, setFoods] = useState([]);
+  const [foods, setFoods] = useState([])
   const [showModal, setShowModal] = useState(false);
-  const [selectedFood, setSelectedFood] = useState(null);
+  const [selectedFood, setSelectedFood] = useState([]);
   const navigate = useNavigate();
+  const [search, setSearch] = useState("")
+  const [filterData, setFilterData] = useState([])
+
+  const handleSearch = (query) => {
+    try {
+      searchItems(query).then((res) => {
+        if (res.data) {
+          setFilterData(res.data)
+        }
+      })
+
+    } catch (error) {
+      console.error("error", error)
+    }
+  }
+  console.log("filterdata", filterData)
+
+  useEffect(() => {
+    handleSearch(search)
+  }, [search])
+
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -33,7 +55,7 @@ const FoodPage = () => {
         }, 2000);
       }
     } catch (error) {
-      toast.error("Please log in first.",error);
+      toast.error("Please log in first.", error);
     }
   };
 
@@ -46,6 +68,22 @@ const FoodPage = () => {
     <div className="relative bg-[#3e7ea6d7] min-h-screen py-24 px-4 text-white">
       <ToastContainer />
       <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
+        <p className="flex items-center hover:text-indigo-400 cursor-pointer">
+          <IoSearch
+            size={18}
+            onClick={handleSearch}
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-900"
+          />
+          <input
+            type="text"
+            name="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            id="search"
+            placeholder="Search..."
+            className="w-1/2 rounded-md bg-gray-200 text-red-500"
+          />
+        </p>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
           Taste the Difference
         </h1>
@@ -62,7 +100,7 @@ const FoodPage = () => {
 
       <div className="relative z-10 max-w-6xl mx-auto">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {foods.map((menuItem) => (
+          {foods && filterData.map((menuItem) => (
             <div
               key={menuItem.id}
               className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between"

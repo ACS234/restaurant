@@ -5,7 +5,7 @@ import { FaInstagram,FaTwitter,FaFacebook } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-700 text-white py-8">
+    <footer className="bg-gray-700 w-full text-white py-8 mb-0 ">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
@@ -33,17 +33,17 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-lg font-bold">Follow Us</h4>
             <div className="flex space-x-4">
-              <Link to="#" className="text-white hover:text-red-500">
-                <FaFacebook size={35}/>
+              <Link to="#" className="text-white ">
+                <FaFacebook color='blue' size={35}/>
               </Link>
-              <Link to="#" className="text-white hover:text-red-500">
-                <FaTwitter size={35}/>
+              <Link to="#" className="text-white">
+                <FaTwitter color='blue' size={35}/>
               </Link>
-              <Link to="#" className="text-white hover:text-red-500">
-                <FaInstagram size={35}/>
+              <Link to="#" className="text-white">
+                <FaInstagram className='rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]' size={35}/>
               </Link>
-              <Link to="#" className="text-white hover:text-red-500">
-                <FaYoutube size={35}/>
+              <Link to="#" className="text-white">
+                <FaYoutube color='red' size={35}/>
               </Link>
             </div>
           </div>

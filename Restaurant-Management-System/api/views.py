@@ -27,36 +27,24 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 from django.db import transaction
-
-
-class FoodFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name="name", lookup_expr="contains")
-    category = filters.CharFilter(field_name="category", lookup_expr="contains")
-    is_vegetarian = filters.BooleanFilter(field_name="is_vegetarian")
-
-    class Meta:
-        model = Food
-        fields = ['name', 'category', 'is_vegetarian']
+from django.db.models import Q
 
 # Search API for Food And Menu
-class SearchFoodAPIView(generics.ListAPIView):
-    queryset = Food.objects.all()
-    serializer_class = FoodSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = FoodFilter
-
+class SearchFoodAPIView(APIView):
+    def get(self,request):
+        query=request.query_params.get('name')
+        foods=Food.objects.filter()
+        if query:
+            foods = foods.filter(Q(name__icontains=query))
+            data = list(foods.values())
+            return Response(data,status=status.HTTP_200_OK)
+        return Response({"error": "No query parameter 'name' provided."},status=status.HTTP_404_NOT_FOUND)
 
 class GetCategory(APIView):
     permission_classes=[IsAuthenticatedOrReadOnly]
     def get(self, request):
-        # food_categories = Food.objects.values_list('category', flat=True).distinct()
-        # menu_categories = Menu.objects.values_list('category', flat=True).distinct()
-        # all_categories = list(set(food_categories) | set(menu_categories))
-        # return Response(all_categories)
         food_categories = Food.objects.values_list('category', flat=True).distinct()
-        food_categories = [f"Food: {category}" for category in food_categories]
         menu_categories = Menu.objects.values_list('category', flat=True).distinct()
-        menu_categories = [f"Menu: {category}" for category in menu_categories]
         all_categories = list(set(food_categories) | set(menu_categories))
         return Response(all_categories)
 
@@ -187,11 +175,16 @@ class MenusAPIView(APIView):
 #  Food API
 class FoodAPIView(APIView):
     def get(self, request):
-        foods = Food.objects.all()[:10]
-        total=foods.count()
+        query = request.query_params.get('name')
+        if query:
+            foods = Food.objects.filter(Q(name__icontains=query))
+        else:
+            foods = Food.objects.all() 
+        
         serializer = FoodSerializer(foods, many=True)
-        return Response({"message":"Foods gets Successfully","total":total,"data":serializer.data},status=status.HTTP_200_OK)
-
+        return Response({
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data.copy()
@@ -282,10 +275,53 @@ class TableAPIView(APIView):
         try:
             unbooked_tables = Table.objects.filter(reservations__isnull=True).select_related('restaurant')
             serializer = TableSerializer(unbooked_tables, many=True)
-            return Response({"message": "Unbooked tables", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def post(self,request):
+        id = request.data.get("restaurant")
+        table_number = request.data.get("table_number")
+        seats = request.data.get("seats")
+        restaurant = Restaurant.objects.get(id=id)
+        table = Table.objects.create(
+            restaurant = restaurant,
+            table_number = table_number,
+            seats = seats,
+            is_available = False
+        )
+
+        qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={request.data.get("table_number")}")
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        
+        table.qr_code.save(f"qr_{table.id}.png", ContentFile(buffer.getvalue()), save=False)
+        table.save()
+
+        serializer = TableSerializer(table)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class TableDetail(APIView):
+    def get(self,request,id):
+        table=get_object_or_404(Table,id=id)
+        serializer=TableSerializer(table)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+
+    def patch(self, request, id):
+        table = get_object_or_404(Table, id=id)
+        serializer = TableSerializer(table, data=request.data, partial=True)
+        if serializer.is_valid():
+            qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={request.data.get("table_number")}")
+            buffer = BytesIO()
+            qr.save(buffer, format="PNG")
+            
+            table.qr_code.save(f"qr_{table.id}.png", ContentFile(buffer.getvalue()), save=False)
+            table.save()
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CartItemCreateView(APIView):

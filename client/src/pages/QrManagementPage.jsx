@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getQRCode } from '../services/apiServices';
+import { getTable } from '../services/apiServices';
 import { toast } from 'react-toastify';
 
 const QRManagementPage = () => {
@@ -7,7 +7,7 @@ const QRManagementPage = () => {
 
   const fetchTables = async () => {
     try {
-      const data = await getQRCode();
+      const data = await getTable();
       setQrCodes(data); 
     } catch (error) {
       console.error("Error fetching QR codes", error);
@@ -19,6 +19,7 @@ const QRManagementPage = () => {
       fetchTables();
   }, []);
 
+  console.log("qrcode",qrCodes)
 
   return (
     <div className="p-6">
@@ -29,11 +30,11 @@ const QRManagementPage = () => {
             <h3 className="text-lg font-semibold mb-2">
               Table #{table.table_number}
             </h3>
-            {table.qr_code_url ? (
+            {table.qr_code ? (
               <img
-                src={table.qr_code_url}
+                src={`http://localhost:8000${table.qr_code}`}
                 alt={`QR Code for Table ${table.table_number}`}
-                className="w-48 h-48 object-contain"
+                className="w-48 h-48 object-contain items-center"
               />
             ) : (
               <p>No QR code available</p>

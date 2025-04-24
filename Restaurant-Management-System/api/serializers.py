@@ -82,10 +82,12 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 class TableSerializer(serializers.ModelSerializer):
     restaurant=RestaurantSerializer()
+    # restaurant=serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all())
 
     class Meta:
         model=Table
-        fields=['id', 'table_number', 'seats','restaurant']
+        # fields= '__all__'
+        fields= ['id','table_number','seats','restaurant']
 
     
 

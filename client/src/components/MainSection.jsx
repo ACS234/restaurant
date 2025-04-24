@@ -12,7 +12,7 @@ const MainSection = () => {
   return (
     <section className="relative py-24 px-6 bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 text-center text-white overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black opacity-60"></div>
-      <div className="absolute inset-0 w-full h-full flex items-center animate-ping justify-center pointer-events-none">
+      <div className="absolute inset-0 w-full h-full flex items-center animate-bounce justify-center pointer-events-none">
         <svg xmlns="http://www.w3.org/2000/svg" className="w-[300px] h-[300px] text-black opacity-20" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="50" cy="50" r="45"></circle>
         </svg>
