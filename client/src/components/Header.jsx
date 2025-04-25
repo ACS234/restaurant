@@ -19,7 +19,7 @@ const Header = () => {
           Experience fine dining like never before
         </p>
 
-        <button className="mt-8 px-8 py-3 text-lg font-semibold text-black bg-white rounded-full shadow-lg hover:bg-yellow-500 hover:text-white transition-all duration-300">
+        <button id='bookTable' className="mt-8 px-8 py-3 text-lg font-semibold text-black bg-white rounded-full shadow-lg hover:bg-yellow-500 hover:text-white transition-all duration-300">
           Book a Table
         </button>
       </div>

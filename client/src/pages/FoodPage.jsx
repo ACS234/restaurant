@@ -65,7 +65,7 @@ const FoodPage = () => {
   };
 
   return (
-    <div className="relative bg-[#3e7ea6d7] min-h-screen py-24 px-4 text-white">
+    <div className="relative bg-[#4073a5d7] min-h-screen py-24 px-4 text-white">
       <ToastContainer />
       <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
         <p className="flex items-center hover:text-indigo-400 cursor-pointer">

@@ -8,6 +8,7 @@ import PaymentPage from './pages/PaymentPage';
 import QRManagementPage from './pages/QrManagementPage';
 import TableOrder from './pages/TableOrder';
 import TableCart from './components/TableCart';
+import TableOrderPage from './pages/TableOrderPage'
 
 const Home = lazy(() => import('./components/Home'));
 const FoodPage = lazy(() => import('./pages/FoodPage'));
@@ -89,7 +90,8 @@ function App() {
               <Route path="/menu-detail/:id" element={<MenuDetail />} />
               <Route path="/food/:id" element={<FoodDetail />} />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/table_order" element={<TableOrder />} />
+              <Route path="/table_order" element={<TableOrder />}/>
+              <Route path="/table_order_page" element={<TableOrderPage />} />
               <Route path="/tablecart" element={<TableCart />} />
 
               {/* Protected Routes */}

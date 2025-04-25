@@ -4,10 +4,8 @@ import { FiPlus, FiMinus } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
 import { getCart, removeCart, updateCart } from '../services/apiServices';
 import { toast, ToastContainer } from 'react-toastify';
-import { RiSecurePaymentFill } from 'react-icons/ri';
 import { TbArrowBackUp } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
-import CheckoutPage from './CheckoutPage';
 import PaymentPage from './PaymentPage';
 
 const AddToCart = () => {
@@ -40,7 +38,7 @@ const AddToCart = () => {
     const newQuantity = Math.max(1, item.quantity + delta);
     try {
       await updateCart(itemId, { quantity: newQuantity });
-      fetchCarts();
+      await fetchCarts();
     } catch (error) {
       toast.error('Failed to update quantity.');
       console.error('Quantity update error:', error);
@@ -69,8 +67,8 @@ const AddToCart = () => {
   return (
     <>
       <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-2 sm:p-6 flex justify-center">
-        <div className="w-full max-w-7xl flex flex-col md:flex-row gap-2 mt-20">
-          <div className="w-full md:w-2/3 bg-white rounded-md p-2 sm:p-6">
+        <div className="w-full max-w-7xl flex flex-col md:flex-col gap-2 mt-10">
+          <div className="w-full md:w-2/3 bg-white rounded-md p-2 ml-32 sm:p-6">
             <h2 className="text-2xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
               <IoIosCart size={28} /> Your Cart ({cartData.length})
             </h2>
@@ -153,7 +151,7 @@ const AddToCart = () => {
               </div>
             )}
           </div>
-          <div className="w-full bg-amber-300 md:w-2/3 rounded-md p-2 m-1 sm:p-6">
+          <div className="w-full bg-amber-100 md:w-2/3 rounded-md p-2 ml-32 sm:p-6">
             <PaymentPage cartData={cartData} totalAmount={totalAmount} />
           </div>
         </div>

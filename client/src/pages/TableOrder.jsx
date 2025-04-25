@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getTableOrder } from '../services/apiServices';
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Outlet  } from 'react-router-dom';
 
 const TableOrder = () => {
     const [tableOrders, setTableOrders] = useState([]);
@@ -67,11 +67,12 @@ const TableOrder = () => {
                                         }`}
                                 ></span>
                             </p>
-                            <button onclick={handleCart()}>add cart</button>
+                            <button onClick={handleCart}>add cart</button>
                         </div>
                     ))}
                 </div>
             )}
+            <Outlet />
         </div>
     );
 };

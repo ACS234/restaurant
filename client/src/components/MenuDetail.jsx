@@ -37,6 +37,9 @@ const MenuDetail = () => {
     }
   };
 
+
+
+
   const handleOrder = () => {
     toast.success("Go to order page");
     navigate('/order');
@@ -47,7 +50,7 @@ const MenuDetail = () => {
   };
 
   return (
-    
+
     // <section className="py-12 px-6 min-h-screen bg-gradient-to-tr from-purple-100 via-blue-200 to-pink-100">
     //<section className="py-12 px-6 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white">
     //<section className="relative bg-[#0f2027] text-white overflow-hidden py-12 px-6 min-h-screen">

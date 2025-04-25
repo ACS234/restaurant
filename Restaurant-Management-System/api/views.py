@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework import generics,filters,status
+from rest_framework.exceptions import ValidationError
 from .models import *
 from .serializers import *
 from django.template.loader import render_to_string
@@ -85,80 +86,6 @@ class RestaurantQRAPIView(APIView):
     def get(self, request, pk):
         restaurant = get_object_or_404(Restaurant, pk=pk)
         return FileResponse(open(restaurant.qr_code.path, "rb"), content_type="image/png")
-
-
-class GenerateQRCodeView(APIView):
-
-    def post(self, request):
-        table_id = request.data.get("table_id")
-        if not table_id:
-            return Response({"error": "Table ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            restaurant = Restaurant.objects.first()
-
-            if not restaurant:
-                return Response({"error": "Default restaurant not found."}, status=status.HTTP_404_NOT_FOUND)
-
-            restaurant_id = restaurant.id
-            table = Table.objects.get(id=table_id, restaurant_id=restaurant_id)
-        except Table.DoesNotExist:
-            return Response({"error": "Table not found in the default restaurant."}, status=status.HTTP_404_NOT_FOUND)
-
-        existing_qr_code = QRCode.objects.filter(
-            restaurant=restaurant,
-            type="table",
-            details__contains={"table_id": table.id}  
-        ).first()
-
-        if existing_qr_code:
-            return Response(
-            {"error": f"QR code for table {table.table_number} already exists."},
-            status=status.HTTP_400_BAD_REQUEST)
-        
-        qr_data_url = f"https://yourdomain.com/qrcode/?table_number="
-        img = generate_qr_code(qr_data_url)
-        bio = io.BytesIO()
-        img.save(bio, format="PNG")
-        qr_image_content = ContentFile(bio.getvalue(), name=f"table_{table.id}_qr.png")
-
-        qr_code_obj = QRCode.objects.create(
-            restaurant=restaurant,
-            type="table",
-            qr_code=qr_image_content,
-            details={
-                "table_number": table.table_number,
-            }
-        )
-
-        serialized = QRCodeSerializer(qr_code_obj, context={'request': request})
-        return Response({"qr_code": serialized.data}, status=status.HTTP_201_CREATED)
-
-
-    def get(self, request):
-        restaurant = Restaurant.objects.first() 
-        if not restaurant:
-            return Response({"error": "Restaurant not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        qr_codes = QRCode.objects.filter(restaurant=restaurant, type="table")
-
-        serialized_qr_codes = QRCodeSerializer(qr_codes, many=True, context={'request': request})
-
-        return Response(serialized_qr_codes.data, status=status.HTTP_200_OK)
-
-class QRCodeByTableNumberView(APIView):
-    def get(self, request):
-        table_number = request.query_params.get('table_number')
-        if not table_number:
-            return Response({'error': 'table_number is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            qr_code = QRCode.objects.get(details__table_number=table_number)
-        except QRCode.DoesNotExist:
-            return Response({'error': 'QR Code not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = QRCodeSerializer(qr_code, context={'request': request})
-        return Response(serializer.data)
 
 # for qr code
 class MenusAPIView(APIView):
@@ -332,24 +259,36 @@ class CartItemCreateView(APIView):
         serializer = CartItemSerializer(cart_items, many=True)
         return Response({"data": serializer.data, "total": cart_items.count()}, status=status.HTTP_200_OK)
     
-    def post(self,request):
+    def post(self, request):
         try:
             food_id = request.data.get('food')
             quantity = request.data.get('quantity', 1)
 
+            if not food_id:
+                return Response({"error": "Food ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
             food = get_object_or_404(Food, id=food_id)
+
+            existing_item = CartItem.objects.filter(food=food, user=request.user).first()
+            if existing_item:
+                return Response(
+                    {"error": "This item is already in the cart."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             cart_item = CartItem.objects.create(
                 food=food,
                 quantity=quantity,
                 user=request.user
             )
-            return Response(CartItemSerializer(cart_item).data,status=status.HTTP_201_CREATED)
+            return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+
         except Exception as e:
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
 
 
     def put(self, request, item_id):
@@ -450,6 +389,73 @@ class ReservationAPIView(APIView):
             return Response({'message': 'Booking submitted!'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class QROrderView(APIView):
+    """
+    Handle the order process for a specific table after scanning the QR code.
+    """
+
+    def get(self, request):
+        """
+        Handle the QR code scan. Return the menu for the specified table.
+        """
+        table_id = request.query_params.get('table_id')
+        if not table_id:
+            raise ValidationError("Table ID is required")
+
+        # Fetch the table and ensure it exists
+        table = get_object_or_404(Table, id=table_id)
+        
+        # Fetch all available items on the menu
+        items = OrderItem.objects.all()
+        serializer = OrderItemSerializer(items, many=True)
+
+        return Response({
+            "table_id": table.id,
+            "menu": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Handle the order submission for a specific table. 
+        The cart items should be tied to the table.
+        """
+        table_id = request.data.get('table_id')
+        if not table_id:
+            raise ValidationError("Table ID is required")
+
+        table = get_object_or_404(Table, id=table_id)
+
+        # Check if there is already a pending order for the table
+        order = Order.objects.filter(table=table, status="pending").first()
+        if not order:
+            # Create a new order if there is no pending order
+            order = Order.objects.create(table=table, status="pending")
+
+        cart_items_data = request.data.get('cart_items', [])
+        if not cart_items_data:
+            raise ValidationError("Cart items are required")
+
+        # Add items to the order
+        for cart_item in cart_items_data:
+            item_id = cart_item.get('item_id')
+            quantity = cart_item.get('quantity', 1)
+            item = get_object_or_404(OrderItem, id=item_id)
+            CartItem.objects.create(order=order, item=item, quantity=quantity)
+
+        # Serialize the order response
+        order_serializer = OrderSerializer(order)
+
+        return Response(order_serializer.data, status=status.HTTP_201_CREATED)
+
+class OrderConfirmationView(APIView):
+    def get(self, request, order_id):
+        """
+        Get the order confirmation details.
+        """
+        order = get_object_or_404(Order, id=order_id)
+        order_serializer = OrderSerializer(order)
+        return Response(order_serializer.data, status=status.HTTP_200_OK)
 
 #Order API
 class OrderAPIView(APIView):
@@ -563,7 +569,7 @@ class OrderStatusAPIView(APIView):
 
 # # Payment API
 class PaymentAPIView(APIView):
-    permission_classes=[IsAuthenticatedOrReadOnly]
+    permission_classes=[IsAuthenticated]
 
     def get(self,request):
         payments=Payment.objects.filter(user=request.user).all()

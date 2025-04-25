@@ -74,7 +74,7 @@ const BookingSection = () => {
   );
 
   return (
-    <section className="relative w-full h-auto min-h-screen flex items-center justify-center px-4 py-20 text-white overflow-hidden">
+    <section id='bookTable' className="relative w-full h-auto min-h-screen flex items-center justify-center px-4 py-20 text-white overflow-hidden">
       <div className="absolute inset-0 bg-cover bg-center filter blur-sm scale-105" />
       <div className="absolute inset-0 bg-gray-600 bg-opacity-60" />
       <div className="relative w-full max-w-3xl mx-auto z-10">

@@ -99,7 +99,6 @@ export const getTable = async () => {
 export const getTableOrder = async () => {
   try {
     const res = await getData(`/api/menus/?table_number=1`);
-    console.log(res)
     return res;
   } catch (error) {
     console.error('Something went wrong', error);
@@ -149,10 +148,12 @@ export const fetchQRData = async () => {
 
 export const addCart = async (data) => {
   try {
-    return await postData(`/api/cart/`, data);
+    const response= await postData(`/api/cart/`, data);
+    console.log(response)
+    return response;
   } catch (error) {
-    console.error('Add to cart error:', error);
-    toast.error("Something went wrong.");
+    console.error('Add to cart error:', error?.response?.data?.error);
+    toast.error(error?.response?.data?.error);
   }
 };
 
@@ -168,7 +169,6 @@ export const removeCart = async (id) => {
 export const updateCart=async(id,data)=>{
   try {
     const response=await updateData(`/api/cart/${id}/update/`,data);
-    console.log("Updated Cart",response)
     return response?.data;
   } catch (error) {
     toast.error("Error while Updating",error);

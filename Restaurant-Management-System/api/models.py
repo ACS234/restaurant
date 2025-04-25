@@ -45,7 +45,7 @@ class Food(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0, validators=[MinValueValidator(0)])
     
     def __str__(self):
-        menu_names = ", ".join([menu.name for menu in self.menu.all()])
+        menu_names = ", ".join([menu.name for menu in self.menus.all()])
         return f"{self.name} ({menu_names})"
     
 class CartItem(models.Model):

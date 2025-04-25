@@ -8,8 +8,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
         model = Restaurant
         fields = '__all__'
 
-
-
 class MenuSerializer(serializers.ModelSerializer):
     foods = serializers.SerializerMethodField()
     restaurant = serializers.SerializerMethodField()
@@ -87,7 +85,7 @@ class TableSerializer(serializers.ModelSerializer):
     class Meta:
         model=Table
         # fields= '__all__'
-        fields= ['id','table_number','seats','restaurant']
+        fields= ['id','table_number','seats','restaurant','qr_code']
 
     
 
@@ -124,7 +122,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
-    # items = serializers.PrimaryKeyRelatedField(queryset=OrderItem.objects.all(),many=True)
+    table = TableSerializer()
     items=OrderItemSerializer(many=True,read_only=True)
     foods = FoodSerializer(many=True, read_only=True)
     class Meta:
