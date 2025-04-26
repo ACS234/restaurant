@@ -120,6 +120,11 @@ function Sidebar({ isAuthenticated, isSidebarOpen, toggleSidebar, handleLogout }
                     size={25} />
                   {isSidebarOpen && <span className="ml-4">Tables</span>}
                 </Link>
+                <Link to="/menus" className="flex items-center space-x-3 text-white hover:text-indigo-400">
+                  <MdTableRestaurant
+                    size={25} />
+                  {isSidebarOpen && <span className="ml-4">Qr Order</span>}
+                </Link>
               </>
             ) : (
               <>
@@ -161,12 +166,6 @@ function Sidebar({ isAuthenticated, isSidebarOpen, toggleSidebar, handleLogout }
                 <span className="text-xs text-gray-400">redchillies@info.com</span>
               </div>
             )}
-            <AiOutlineLogout
-              size={35}
-              onClick={handleLogout}
-              className="cursor-pointer text-white"
-              title="Logout"
-            />
           </div>
         )}
       </div>

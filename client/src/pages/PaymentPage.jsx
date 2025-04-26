@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { getRestaurant, orderPayment } from '../services/apiServices';
-import 'react-toastify/dist/ReactToastify.css';
 
 const PaymentPage = ({ cartData, totalAmount }) => {
   const navigate = useNavigate();
@@ -62,7 +61,7 @@ const PaymentPage = ({ cartData, totalAmount }) => {
     setIsProcessing(true);
 
     try {
-      const data = await orderPayment({
+      const { data, success } = await orderPayment({
         amount: totalAmount,
         payment_method: selectedMethod,
         address: selectedMethod === 'Cash' ? 'Cash on counter - No delivery' : formData.address,
@@ -74,20 +73,23 @@ const PaymentPage = ({ cartData, totalAmount }) => {
         })),
         restaurant_id: restaurantId?.id,
       });
-
-      if (data.success) {
+    
+      console.log('Payment response:', data);
+    
+      if (success) {
         toast.success(data.message || 'Payment successful!');
         setTimeout(() => navigate('/order-confirmation'), 2000);
       } else {
-        toast.error('Payment failed.');
+        toast.error(data?.error || 'Payment failed.');
       }
+    
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error(error.message || 'Something went wrong!');
+      toast.error(error?.data?.error || 'Something went wrong!');
     } finally {
       setIsProcessing(false);
     }
-  };
+  }    
 
   const isDeliveryMethod = selectedMethod !== 'Cash';
 

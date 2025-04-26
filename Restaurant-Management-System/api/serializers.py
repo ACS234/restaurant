@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import *
-from authapp.serializers import UserSerializer
+# from authapp.serializers import UserSerializer
 from datetime import datetime, timedelta
 
 class RestaurantSerializer(serializers.ModelSerializer):
@@ -159,7 +159,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PaymentSerializer(serializers.ModelSerializer):
-    user=UserSerializer()
+    # user=UserSerializer()
     class Meta:
         model = Payment
         fields = '__all__'

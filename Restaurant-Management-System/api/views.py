@@ -1,117 +1,119 @@
 import qrcode
 import stripe
-import io
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from django.http import FileResponse
+from django.core.files import File
+import os
 from io import BytesIO
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
+from django.http import FileResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.shortcuts import get_object_or_404, render
-from django.http import FileResponse
-from rest_framework.response import Response
-from rest_framework import generics,filters,status
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from .models import *
 from .serializers import *
-from django.template.loader import render_to_string
-import pdfkit
+from authapp.models import User
 from django.utils import timezone
 import os
 from django.conf import settings
 from PIL import Image
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from .utils import generate_qr_code
+from .utils import generate_receipt_pdf
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters import rest_framework as filters
 from django.db import transaction
 from django.db.models import Q
 
+
+
 # Search API for Food And Menu
 class SearchFoodAPIView(APIView):
-    def get(self,request):
-        query=request.query_params.get('name')
-        foods=Food.objects.filter()
+    def get(self, request):
+        query = request.query_params.get('name')
+        foods = Food.objects.all()
         if query:
             foods = foods.filter(Q(name__icontains=query))
             data = list(foods.values())
-            return Response(data,status=status.HTTP_200_OK)
-        return Response({"error": "No query parameter 'name' provided."},status=status.HTTP_404_NOT_FOUND)
+            return Response(data, status=status.HTTP_200_OK)
+        return Response({"error": "No query parameter 'name' provided."}, status=status.HTTP_404_NOT_FOUND)
+
 
 class GetCategory(APIView):
-    permission_classes=[IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         food_categories = Food.objects.values_list('category', flat=True).distinct()
         menu_categories = Menu.objects.values_list('category', flat=True).distinct()
         all_categories = list(set(food_categories) | set(menu_categories))
         return Response(all_categories)
 
-        
-#  Restaurant API
+
+# Restaurant API
 class RestaurantAPIView(APIView):
     def get(self, request):
         restaurants = Restaurant.objects.all()
         serializer = RestaurantSerializer(restaurants, many=True)
         return Response(serializer.data)
-    
+
     def post(self, request, *args, **kwargs):
         name = request.data.get('name')
         location = request.data.get('location')
         contact_number = request.data.get('contact_number')
-        
+
         if Restaurant.objects.filter(name=name).exists():
             return Response({"error": "A restaurant with this name already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         restaurant = Restaurant.objects.create(
             name=name,
             location=location,
             contact_number=contact_number
         )
-        
-        qr = qrcode.make(f"Restaurant Menu: {restaurant.name}")
+
+        qr = qrcode.make(f"http://localhost:8000/api/restaurants/{restaurant.id}/menu")
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
-        
+
         restaurant.qr_code.save(f"qr_{restaurant.id}.png", ContentFile(buffer.getvalue()), save=False)
-        restaurant.save() 
+        restaurant.save()
 
         serializer = RestaurantSerializer(restaurant)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
 
 class RestaurantQRAPIView(APIView):
     def get(self, request, pk):
         restaurant = get_object_or_404(Restaurant, pk=pk)
         return FileResponse(open(restaurant.qr_code.path, "rb"), content_type="image/png")
 
-# for qr code
+
+# Menus API
 class MenusAPIView(APIView):
     def get(self, request, restaurant_id, table_id):
-        restaurant = Restaurant.objects.get(id=restaurant_id)
-        table = Table.objects.get(id=table_id, restaurant=restaurant)
+        restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+        table = get_object_or_404(Table, id=table_id, restaurant=restaurant)
 
         menu_items = restaurant.menus.all()
-
         serializer = MenuSerializer(menu_items, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-#  Food API
+
+# Food API
 class FoodAPIView(APIView):
     def get(self, request):
         query = request.query_params.get('name')
+        foods = Food.objects.all()
         if query:
-            foods = Food.objects.filter(Q(name__icontains=query))
-        else:
-            foods = Food.objects.all() 
+            foods = foods.filter(Q(name__icontains=query))
         
         serializer = FoodSerializer(foods, many=True)
-        return Response({
-            "data": serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data.copy()
@@ -120,20 +122,18 @@ class FoodAPIView(APIView):
         if img:
             with Image.open(img) as img_file:
                 resized_img = img_file.resize((300, 300))
-
                 img_io = BytesIO()
-                resized_img.save(img_io, format='JPEG') 
+                resized_img.save(img_io, format='JPEG')
                 img_io.seek(0)
 
                 resized_image = InMemoryUploadedFile(
-                    img_io, 
-                    None, 
-                    'resized_img.jpg', 
-                    'image/jpeg', 
-                    img_io.getbuffer().nbytes, 
+                    img_io,
+                    None,
+                    'resized_img.jpg',
+                    'image/jpeg',
+                    img_io.getbuffer().nbytes,
                     None
                 )
-                
                 data['image'] = resized_image
 
         serializer = FoodSerializer(data=data)
@@ -143,15 +143,11 @@ class FoodAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class FoodDetailAPIView(APIView):
     def get(self, request, pk):
-        try:
-            foods=Food.objects.get(pk=pk)
-            serializer = FoodSerializer(foods)
-            return Response(serializer.data)
-        except ObjectDoesNotExist:
-            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+        food = get_object_or_404(Food, pk=pk)
+        serializer = FoodSerializer(food)
+        return Response(serializer.data)
 
     def patch(self, request, pk):
         food = get_object_or_404(Food, pk=pk)
@@ -161,32 +157,31 @@ class FoodDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
 # Menu API
 class MenuAPIView(APIView):
-    permission_classes=[IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         menus = Menu.objects.all()
         serializer = MenuSerializer(menus, many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    
-    def post(self,request):
-        serializer=MenuSerializer(data=request.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = MenuSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MenuDetailAPIView(APIView):
     def get(self, request, pk):
         try:
-            menu=Menu.objects.prefetch_related('foods').get(pk=pk)
+            menu = Menu.objects.prefetch_related('foods').get(pk=pk)
             serializer = MenuSerializer(menu)
-            return Response({"data":serializer.data},status=status.HTTP_200_OK)
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Menu item not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, pk):
         menu = get_object_or_404(Menu, pk=pk)
@@ -197,53 +192,54 @@ class MenuDetailAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Table API
 class TableAPIView(APIView):
     def get(self, request):
         try:
             unbooked_tables = Table.objects.filter(reservations__isnull=True).select_related('restaurant')
             serializer = TableSerializer(unbooked_tables, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    def post(self,request):
-        id = request.data.get("restaurant")
+
+    def post(self, request):
+        restaurant_id = request.data.get("restaurant")
         table_number = request.data.get("table_number")
         seats = request.data.get("seats")
-        restaurant = Restaurant.objects.get(id=id)
+        restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+
         table = Table.objects.create(
-            restaurant = restaurant,
-            table_number = table_number,
-            seats = seats,
-            is_available = False
+            restaurant=restaurant,
+            table_number=table_number,
+            seats=seats,
+            is_available=False
         )
 
-        qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={request.data.get("table_number")}")
+        qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={table_number}")
         buffer = BytesIO()
         qr.save(buffer, format="PNG")
-        
+
         table.qr_code.save(f"qr_{table.id}.png", ContentFile(buffer.getvalue()), save=False)
         table.save()
 
         serializer = TableSerializer(table)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
+
 class TableDetail(APIView):
-    def get(self,request,id):
-        table=get_object_or_404(Table,id=id)
-        serializer=TableSerializer(table)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    
+    def get(self, request, id):
+        table = get_object_or_404(Table, id=id)
+        serializer = TableSerializer(table)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, id):
         table = get_object_or_404(Table, id=id)
         serializer = TableSerializer(table, data=request.data, partial=True)
         if serializer.is_valid():
-            qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={request.data.get("table_number")}")
+            qr = qrcode.make(f"http://127.0.0.1:8000/api/menus/?table_number={request.data.get('table_number')}")
             buffer = BytesIO()
             qr.save(buffer, format="PNG")
-            
+
             table.qr_code.save(f"qr_{table.id}.png", ContentFile(buffer.getvalue()), save=False)
             table.save()
             serializer.save()
@@ -251,6 +247,7 @@ class TableDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Cart API
 class CartItemCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -258,7 +255,7 @@ class CartItemCreateView(APIView):
         cart_items = CartItem.objects.filter(user=request.user).select_related('food')
         serializer = CartItemSerializer(cart_items, many=True)
         return Response({"data": serializer.data, "total": cart_items.count()}, status=status.HTTP_200_OK)
-    
+
     def post(self, request):
         try:
             food_id = request.data.get('food')
@@ -284,12 +281,7 @@ class CartItemCreateView(APIView):
             return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request, item_id):
         cart_item = get_object_or_404(CartItem, id=item_id, user=request.user)
@@ -324,6 +316,7 @@ class CartDetailAPIView(APIView):
         cart_item.delete()
         return Response({"message": "Cart Item Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
+# fix it here
 class ReservationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -332,11 +325,12 @@ class ReservationAPIView(APIView):
             now = timezone.localtime()
             today = now.date()
 
+            # Clean up expired reservations and free up tables
             for reservation in Reservation.objects.filter(status='booked'):
                 if reservation.is_expired:
                     reservation.table.is_available = True
                     reservation.table.save()
-                    reservation.delete()  
+                    reservation.delete()
 
             active_reservations = Reservation.objects.filter(
                 reservation_date__gte=today,
@@ -356,9 +350,7 @@ class ReservationAPIView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({
-                "error": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         serializer = ReservationSerializer(data=request.data)
@@ -391,22 +383,12 @@ class ReservationAPIView(APIView):
 
 
 class QROrderView(APIView):
-    """
-    Handle the order process for a specific table after scanning the QR code.
-    """
-
     def get(self, request):
-        """
-        Handle the QR code scan. Return the menu for the specified table.
-        """
         table_id = request.query_params.get('table_id')
         if not table_id:
             raise ValidationError("Table ID is required")
 
-        # Fetch the table and ensure it exists
         table = get_object_or_404(Table, id=table_id)
-        
-        # Fetch all available items on the menu
         items = OrderItem.objects.all()
         serializer = OrderItemSerializer(items, many=True)
 
@@ -416,20 +398,15 @@ class QROrderView(APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        """
-        Handle the order submission for a specific table. 
-        The cart items should be tied to the table.
-        """
         table_id = request.data.get('table_id')
         if not table_id:
             raise ValidationError("Table ID is required")
 
         table = get_object_or_404(Table, id=table_id)
 
-        # Check if there is already a pending order for the table
+        # Check if a pending order exists for the table
         order = Order.objects.filter(table=table, status="pending").first()
         if not order:
-            # Create a new order if there is no pending order
             order = Order.objects.create(table=table, status="pending")
 
         cart_items_data = request.data.get('cart_items', [])
@@ -441,24 +418,14 @@ class QROrderView(APIView):
             item_id = cart_item.get('item_id')
             quantity = cart_item.get('quantity', 1)
             item = get_object_or_404(OrderItem, id=item_id)
-            CartItem.objects.create(order=order, item=item, quantity=quantity)
+            OrderItem.objects.create(order=order, food=item.food, quantity=quantity)
 
-        # Serialize the order response
         order_serializer = OrderSerializer(order)
-
         return Response(order_serializer.data, status=status.HTTP_201_CREATED)
 
-class OrderConfirmationView(APIView):
-    def get(self, request, order_id):
-        """
-        Get the order confirmation details.
-        """
-        order = get_object_or_404(Order, id=order_id)
-        order_serializer = OrderSerializer(order)
-        return Response(order_serializer.data, status=status.HTTP_200_OK)
 
-#Order API
 class OrderAPIView(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self, request):
         orders = Order.objects.filter(user=request.user)
         serializer = OrderSerializer(orders, many=True)
@@ -475,7 +442,6 @@ class OrderAPIView(APIView):
 
         existing_order = Order.objects.filter(user=user, status='Paid').first()
         if existing_order:
-            cart_items.delete()
             return Response({'error': 'This order has already been paid.'}, status=status.HTTP_400_BAD_REQUEST)
 
         order_data = {
@@ -491,43 +457,26 @@ class OrderAPIView(APIView):
 
         return Response({'message': 'Order placed successfully', 'order_id': order.id}, status=status.HTTP_201_CREATED)
 
-
-class OrderDetailAPIView(APIView):
-    def get(self, request, pk):
-        order = get_object_or_404(Order, pk=pk)
-        if order.user != request.user:
-            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
-
-    def patch(self, request, pk):
-        order = get_object_or_404(Order, pk=pk)
-        if order.user != request.user:
-            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = OrderSerializer(order, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class OrderItemAPIView(APIView):
     def get(self, request):
+        # Retrieve order items by order_id or all order items if no order_id is provided
         order_id = request.GET.get("order_id")
         if order_id:
             order_items = OrderItem.objects.filter(order_id=order_id)
         else:
             order_items = OrderItem.objects.all()
 
+        # Serialize and return the order items
         serializer = OrderItemSerializer(order_items, many=True)
         return Response(serializer.data)
 
     def post(self, request):
+        # Create a new order item
         serializer = OrderItemSerializer(data=request.data)
         if serializer.is_valid():
             food_id = request.data.get("food")
             try:
+                # Fetch food item by id
                 food = Food.objects.get(id=food_id)
             except Food.DoesNotExist:
                 return Response({"detail": "Food not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -536,12 +485,14 @@ class OrderItemAPIView(APIView):
             if not quantity:
                 return Response({"detail": "Quantity is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            order_item = serializer.save()
+            # Create and save the order item
+            order_item = serializer.save(food=food, quantity=quantity)
             return Response(OrderItemSerializer(order_item).data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
+        # Update an existing order item
         order_item = get_object_or_404(OrderItem, pk=pk)
         serializer = OrderItemSerializer(order_item, data=request.data, partial=True)
         if serializer.is_valid():
@@ -550,10 +501,10 @@ class OrderItemAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
+        # Delete an existing order item
         order_item = get_object_or_404(OrderItem, pk=pk)
         order_item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+        return Response({"detail": "Order item deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 # Order Status API
 class OrderStatusAPIView(APIView):
@@ -567,14 +518,59 @@ class OrderStatusAPIView(APIView):
         order.save()
         return Response({"message": "Order status updated", "status": order.status})
 
-# # Payment API
-class PaymentAPIView(APIView):
-    permission_classes=[IsAuthenticated]
 
-    def get(self,request):
-        payments=Payment.objects.filter(user=request.user).all()
-        serializer=PaymentSerializer(payments,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+# Order Detail API
+class OrderDetailAPIView(APIView):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, pk=order_id)
+        items = order.items.all()
+
+        order_data = {
+            "order_id": order.id,
+            "restaurant_name": order.restaurant.name,
+            "customer_name": order.customer_name,
+            "status": order.status,
+            "created_at": order.created_at.strftime('%Y-%m-%d %H:%M'),
+            "items": [
+                {
+                    "Food_name": item.food.name,
+                    "Quantity": item.quantity,
+                    "Item_price": item.food.price,
+                    "Total": item.quantity * item.food.price
+                } for item in items
+            ]
+        }
+
+        return Response(order_data, status=status.HTTP_200_OK)
+
+# Order Confirmation API
+class OrderConfirmationView(APIView):
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, pk=order_id)
+
+        if order.status != 'Completed':
+            order.status = 'Confirmed'
+            order.save()
+
+            return Response(
+                {"message": "Order has been confirmed", "order_id": order.id, "status": order.status},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {"error": "Order has already been completed."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+# Payment API
+class PaymentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        payments = Payment.objects.filter(user=request.user).all()
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data
@@ -583,7 +579,8 @@ class PaymentAPIView(APIView):
         payment_method = data.get('payment_method')
         restaurant_id = data.get('restaurant_id')
 
-        if not items or not amount or not payment_method or not restaurant_id or not request.user:
+        required_fields = [items, amount, payment_method, restaurant_id]
+        if any(field in [None, ''] for field in required_fields):
             return Response(
                 {"success": False, "error": "Missing required payment information."},
                 status=status.HTTP_400_BAD_REQUEST
@@ -596,6 +593,12 @@ class PaymentAPIView(APIView):
                 {"success": False, "error": "Restaurant not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+        if not request.user or not request.user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=401)
+
+        existing_payment = Payment.objects.filter(user=request.user, is_paid=True).first()
+        if existing_payment:
+            return Response({"message": "Payment already made."}, status=status.HTTP_400_BAD_REQUEST)
 
         valid_methods = ['Cash', 'Credit Card', 'UPI', 'Wallet']
         if payment_method not in valid_methods:
@@ -609,7 +612,7 @@ class PaymentAPIView(APIView):
                 order = Order.objects.create(
                     restaurant=restaurant,
                     customer_name=request.user,
-                    status='Completed',  # Or use 'Pending' if payment happens later
+                    status='Completed',
                 )
 
                 for item in items:
@@ -631,14 +634,14 @@ class PaymentAPIView(APIView):
                     )
 
                 payment = Payment.objects.create(
+                    user=request.user,
                     order=order,
                     amount=amount,
                     payment_method=payment_method,
                     is_paid=True
                 )
 
-                # Clear user's cart
-                CartItem.objects.filter(user=request.user).delete()
+                CartItem.objects.filter(user=request.user, checked_out=False).update(checked_out=True)
 
                 return Response(
                     {
@@ -657,65 +660,232 @@ class PaymentAPIView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-#  Receipt API (PDF Generation)
+
+# Receipt API
 class GenerateReceiptAPIView(APIView):
     def get(self, request, order_id):
         order = get_object_or_404(Order, pk=order_id)
         items = order.items.all()
 
-        items_data = []
+        # Ensure the receipts directory exists
+        receipt_dir = os.path.join(settings.BASE_DIR, 'uploads', 'receipts')
+        os.makedirs(receipt_dir, exist_ok=True)
+
+        # Path to save the PDF
+        file_path = os.path.join(receipt_dir, f'order_{order.id}.pdf')
+
+        # Create a PDF using ReportLab
+        c = canvas.Canvas(file_path, pagesize=letter)
+        width, height = letter
+
+        # Title
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(200, height - 40, f"Receipt for Order #{order.id}")
+
+        # Restaurant and Customer Info
+        c.setFont("Helvetica", 12)
+        c.drawString(50, height - 80, f"Restaurant: {order.restaurant.name}")
+        c.drawString(50, height - 100, f"Customer: {order.customer_name}")
+        c.drawString(50, height - 120, f"Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}")
+
+        # Items List Header
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(50, height - 150, "Item Name")
+        c.drawString(200, height - 150, "Quantity")
+        c.drawString(300, height - 150, "Unit Price")
+        c.drawString(400, height - 150, "Subtotal")
+        # Items List
+        c.setFont("Helvetica", 10)
+        y_position = height - 170
         total = 0
 
         for item in items:
+            # Truncate long item names
+            max_length = 30
+            item_name = item.food.name
+            if len(item_name) > max_length:
+                item_name = item_name[:max_length - 3] + "..."
+
             subtotal = item.quantity * item.food.price
-            item_data = {
-                "name": item.id,
-                "quantity": item.quantity,
-                "unit_price": item.food.price,
-                "subtotal": subtotal,
-            }
-            items_data.append(item_data)
+            c.drawString(50, y_position, item_name)
+            c.drawString(200, y_position, str(item.quantity))
+            c.drawString(300, y_position, f"₹{item.food.price:.2f}")
+            c.drawString(400, y_position, f"₹{subtotal:.2f}")
+            y_position -= 20
             total += subtotal
 
-        context = {
-            "order_id": order.id,
-            "restaurant": order.restaurant.name,
-            "customer_name": order.customer_name,
-            "date": order.created_at.strftime('%Y-%m-%d %H:%M'),
-            "items": items_data,
-            "total": total,
-        }
+        # Total
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(350, y_position - 20, f"Total: ₹{total:.2f}")
+        y_position -= 60
 
-        return render(request, "api/receipt.html", context)
-    
+        # Greeting / Thank you message
+        c.setFont("Helvetica-Oblique", 11)
+        c.drawCentredString(width / 2, y_position, "❤️ Thank you for dining with us! We hope to see you again soon. ❤️")
+        c.drawCentredString(width / 2, y_position - 20, "With love, your favorite restaurant 💕")
+
+        # Save the PDF
+        c.save()
+
+        # Serve the PDF
+        try:
+            return FileResponse(open(file_path, "rb"), content_type="application/pdf")
+        except FileNotFoundError:
+            return Response("Receipt file could not be generated.", status=500)
+
     def post(self, request, order_id):
         order = get_object_or_404(Order, pk=order_id)
-        html_content = render_to_string("api/receipt.html")
+        # PDF file path
+        pdf_file_path = os.path.join(settings.MEDIA_ROOT, f"receipts/order_{order_id}.pdf")
 
+        # Check if the receipt already exists
         if Receipt.objects.filter(order=order).exists():
             receipt = Receipt.objects.get(order=order)
             return FileResponse(open(receipt.pdf_file.path, "rb"), content_type="application/pdf")
 
         try:
-            pdf_file_path = os.path.join(settings.MEDIA_ROOT, f"receipts/order_{order_id}.pdf")
-            pdfkit.from_string(html_content, pdf_file_path)
+            # Generate the receipt PDF
+            self.get(request, order_id)
+
+            # Create a Receipt entry in the database
+            receipt = Receipt.objects.create(order=order, pdf_file=f"receipts/order_{order_id}.pdf")
+            
+            # Return the newly generated receipt as a response
+            return FileResponse(open(pdf_file_path, "rb"), content_type="application/pdf")
+
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-        receipt = Receipt.objects.create(order=order, pdf_file=f"receipts/order_{order_id}.pdf")
 
-        return FileResponse(open(pdf_file_path, "rb"), content_type="application/pdf")
-    
 # Review API
 class ReviewAPIView(APIView):
     def get(self, request):
         reviews = Review.objects.all()
         serializer = ReviewSerializer(reviews, many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message":"Review complete successfully","data":serializer.data}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Review complete successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# For QR code 
+class MenuByTableAPIView(APIView):
+    def get(self, request):
+        table_number = request.GET.get("table_number")
+        try:
+            table = Table.objects.get(table_number=table_number)
+            restaurant = table.restaurant
+            menus = Menu.objects.filter(restaurant=restaurant, is_active=True)
+            serializer = MenuSerializer(menus, many=True)
+            return Response({"table_id": table.id, "restaurant_name": restaurant.name, "menus": serializer.data})
+        except Table.DoesNotExist:
+            return Response({"error": "Invalid table number"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class CreateOrderAPIView(APIView):
+    def post(self, request):
+        table_id = request.data.get("table_id")
+        cart_items = request.data.get("cart_items")  # List of {food_id, quantity}
+        customer_name = request.data.get("customer_name")
+        customer_contact = request.data.get("customer_contact")
+
+        if not table_id or not cart_items:
+            return Response({"error": "Missing table or cart information."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            table = Table.objects.get(id=table_id)
+            restaurant = table.restaurant
+            user = request.user if request.user.is_authenticated else None
+
+            order = Order.objects.create(
+                restaurant=restaurant,
+                user=user,
+                table=table,
+                customer_name=customer_name,
+                customer_contact=customer_contact,
+            )
+
+            for item in cart_items:
+                food = Food.objects.get(id=item['food_id'])
+                OrderItem.objects.create(order=order, food=food, quantity=item['quantity'])
+
+            return Response({"message": "Order placed successfully!", "order_id": order.id}, status=status.HTTP_201_CREATED)
+
+        except Table.DoesNotExist:
+            return Response({"error": "Invalid table id."}, status=status.HTTP_400_BAD_REQUEST)
+        except Food.DoesNotExist:
+            return Response({"error": "Invalid food item in cart."}, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateOrderStatusAPIView(APIView):
+    def post(self, request, order_id):
+        order = Order.objects.get(id=order_id)
+        new_status = request.data.get("status")
+
+        if new_status not in ['Pending', 'Preparing', 'Completed', 'Cancelled']:
+            return Response({"error": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.status = new_status
+        order.save()
+
+        return Response({"message": f"Order #{order.id} status updated to {new_status}."}, status=status.HTTP_200_OK)
+
+class ManualOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        table_number = data.get('table_number')
+        customer_name = data.get('customer_name')
+        customer_contact = data.get('customer_contact')
+        food_items = data.get('food_items')
+
+        if not table_number or not food_items:
+            return Response({"error": "Table number and food items are required."}, status=400)
+
+        table = get_object_or_404(Table, table_number=table_number)
+
+        order = Order.objects.create(
+            user=request.user,
+            table=table,
+            restaurant=table.restaurant,
+            customer_name=customer_name,
+            customer_contact=customer_contact,
+            status='Pending'
+        )
+
+        total = 0
+        for item in food_items:
+            food = get_object_or_404(Food, id=item['food_id'])
+            quantity = item.get('quantity', 1)
+            OrderItem.objects.create(order=order, food=food, quantity=quantity)
+            total += food.price * quantity
+
+        # ✅ Step to generate receipt PDF
+        try:
+            # Generate receipt PDF (you must have your generate_receipt_pdf function ready)
+            generate_receipt_pdf(order)
+
+            # Correct filename: add "manual_order_" prefix
+            filename = f"manual_order_{order.id}.pdf"
+            pdf_file_path = os.path.join(settings.MEDIA_ROOT,"uploads", "receipts", filename)
+
+            # Save to model properly
+            if os.path.exists(pdf_file_path):
+                with open(pdf_file_path, "rb") as pdf:
+                    receipt = Receipt(order=order)
+                    receipt.pdf_file.save(filename, File(pdf))  # Proper file save
+                    receipt.save()
+
+        except Exception as e:
+            return Response({"error": f"Order saved, but receipt failed: {str(e)}"}, status=500)
+
+        return Response({
+            "message": "Order and receipt generated successfully.",
+            "order_id": order.id,
+            "total_amount": float(total),
+            "currency": "₹",
+            "receipt_url": f"{settings.MEDIA_URL}receipts/{filename}"
+        }, status=status.HTTP_201_CREATED)

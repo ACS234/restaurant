@@ -1,6 +1,9 @@
 import base64
 import qrcode
 import io
+import os
+from django.conf import settings
+from reportlab.pdfgen import canvas
 
 
 def generate_qr_code(data, size=10, border=0):
@@ -22,3 +25,28 @@ def generate_qr(url_text):
     context_dict['file_type'] = "png"
     context_dict['image_base64'] = img_name
     return context_dict
+
+
+
+def generate_receipt_pdf(order):
+    path = os.path.join(settings.MEDIA_ROOT, f"receipts/order_{order.id}.pdf")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    c = canvas.Canvas(path)
+    c.setFont("Helvetica", 14)
+    c.drawString(100, 800, f"Receipt - Order #{order.id}")
+    c.drawString(100, 780, f"Customer: {order.customer_name or order.user.username}")
+    c.drawString(100, 760, f"Table: {order.table.table_number if order.table else 'N/A'}")
+    c.drawString(100, 740, "Items:")
+
+    y = 720
+    total = 0
+    for item in order.items.all():
+        line = f"{item.food.name} x {item.quantity} - ₹{item.total_price}"
+        c.drawString(100, y, line)
+        total += item.total_price
+        y -= 20
+
+    c.drawString(100, y - 10, f"Total: ₹{total}")
+    c.drawString(100, y - 40, "Thank you for dining with us! Visit Again ❤️")
+    c.save()

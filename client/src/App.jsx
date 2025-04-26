@@ -9,6 +9,9 @@ import QRManagementPage from './pages/QrManagementPage';
 import TableOrder from './pages/TableOrder';
 import TableCart from './components/TableCart';
 import TableOrderPage from './pages/TableOrderPage'
+import MenuPage from './pages/MenuPage';
+import OrderStatus from './pages/OrderStatus';
+import ProfilePage from './pages/ProfilePage';
 
 const Home = lazy(() => import('./components/Home'));
 const FoodPage = lazy(() => import('./pages/FoodPage'));
@@ -28,6 +31,7 @@ const FoodDetail = lazy(() => import('./components/Fooddetail'));
 const GallerySection = lazy(() => import('./components/GallerySection'));
 const BookingSection = lazy(() => import('./components/BookingSection'));
 const ReviewSection = lazy(() => import('./components/ReviewSection'));
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -93,8 +97,11 @@ function App() {
               <Route path="/table_order" element={<TableOrder />}/>
               <Route path="/table_order_page" element={<TableOrderPage />} />
               <Route path="/tablecart" element={<TableCart />} />
+              <Route path="/menus" element={<MenuPage />} />
+              <Route path="/order/:orderId" element={<OrderStatus />} />
 
               {/* Protected Routes */}
+              <Route path="/users" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/cart" element={<ProtectedRoute><AddToCart /></ProtectedRoute>} />
               <Route path="/booking" element={<ProtectedRoute><BookingSection /></ProtectedRoute>} />
               <Route path="/order" element={<ProtectedRoute><OrderPage /></ProtectedRoute>} />

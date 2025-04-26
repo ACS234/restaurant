@@ -52,13 +52,14 @@ class CartItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart_items')
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    checked_out = models.BooleanField(default=False)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'food')
 
     def __str__(self):
-        return f"{self.quantity} x {self.food.name}"
+        return f"{self.quantity} x {self.food.name} x {self.user.username}"
     
     
 class Table(models.Model):
@@ -79,8 +80,6 @@ class QRCode(models.Model):
 
     def __str__(self):
         return f"{self.type} {self.details}"
-
-
 
 class Reservation(models.Model):
     table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='reservations')
@@ -119,16 +118,20 @@ class Order(models.Model):
         ('Completed', 'Completed'),
         ('Cancelled', 'Cancelled'),
     ]
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE,default=None)
-    customer_name = models.CharField(settings.AUTH_USER_MODEL,max_length=255,null=True, blank=True)
-    customer_contact = models.CharField(max_length=15,null=True, blank=True)
-    food_items = models.ManyToManyField(Food, through='OrderItem',default=None,related_name="orders") 
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE,null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True, blank=True)
+    customer_name = models.CharField(max_length=255, null=True, blank=True) 
+    customer_contact = models.CharField(max_length=15, null=True, blank=True)
+    food_items = models.ManyToManyField(Food, through='OrderItem', related_name="orders")
     delivery_address = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Order #{self.id} - {self.customer_name}"
+        food_names = ", ".join([food.name for food in self.food_items.all()])
+        return f"Order #{self.id} for {self.user.username}, food items: {food_names}"
+
     
     
 class OrderItem(models.Model):
@@ -165,7 +168,7 @@ class Payment(models.Model):
 
 class Receipt(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="receipt")
-    pdf_file = models.FileField(upload_to="receipts/", blank=True, null=True)
+    pdf_file = models.FileField(upload_to="receipts/",max_length=500, blank=True, null=True)
 
     def __str__(self):
         return f"Receipt for Order {self.order.id}"

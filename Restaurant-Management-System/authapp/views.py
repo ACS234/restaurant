@@ -1,11 +1,12 @@
 from rest_framework.decorators import api_view
-from .serializers import RegistrationSerializer,UserSerializer
+from .serializers import *
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny,IsAuthenticated
+from api.models import Order
 
 @api_view(['POST'])
 def logout_view(request):
@@ -41,7 +42,14 @@ class RegistrationView(APIView):
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
-        user = request.user
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+
+    def get(self, request):
+        orders = Order.objects.filter(customer_name=request.user).order_by('-created_at')
+        serializer = PastOrderSerializer(orders, many=True)
+        return Response({
+            "user_info": {
+                "username": request.user.username,
+                "email": request.user.email,
+            },
+            "orders": serializer.data
+        })

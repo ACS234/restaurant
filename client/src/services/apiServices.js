@@ -282,6 +282,16 @@ export const Login = async (data) => {
   }
 };
 
+export const getUser=async()=>{
+  try {
+    const response=await getData(`/auth/api/user/`);
+    return response;
+  } catch (error) {
+    toast.error("something went wrong",error.message);
+    throw error;
+  }
+}
+
 export const tokenRefresh = async (data) => {
   try {
     return await axios.post(`${apiUrl}/auth/api/token/refresh/`, data);
