@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from api.serializers import OrderItemSerializer
@@ -38,19 +39,19 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 
-class PastOrderSerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
-    total_bill = serializers.SerializerMethodField()
-    user_info = UserSerializer()
+# class PastOrderSerializer(serializers.ModelSerializer):
+#     items = serializers.SerializerMethodField()
+#     total_bill = serializers.SerializerMethodField()
+#     user_info = UserSerializer()
 
-    class Meta:
-        model = Order
-        fields = ['id', 'created_at', 'status', 'total_bill', 'items', 'user_info']
+#     class Meta:
+#         model = Order
+#         fields = ['id', 'created_at', 'status', 'total_bill', 'items', 'user_info']
 
-    def get_items(self, obj):
-        items = OrderItem.objects.filter(order=obj)
-        return OrderItemSerializer(items, many=True).data
+#     def get_items(self, obj):
+#         items = OrderItem.objects.filter(order=obj)
+#         return OrderItemSerializer(items, many=True).data
 
-    def get_total_bill(self, obj):
-        items = OrderItem.objects.filter(order=obj)
-        return sum(item.food.price * item.quantity for item in items)
+#     def get_total_bill(self, obj):
+#         items = OrderItem.objects.filter(order=obj)
+#         return sum(item.food.price * item.quantity for item in items)

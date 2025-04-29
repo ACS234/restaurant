@@ -44,12 +44,5 @@ class UserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        orders = Order.objects.filter(customer_name=request.user).order_by('-created_at')
-        serializer = PastOrderSerializer(orders, many=True)
-        return Response({
-            "user_info": {
-                "username": request.user.username,
-                "email": request.user.email,
-            },
-            "orders": serializer.data
-        })
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data,status=status.HTTP_200_OK)

@@ -252,7 +252,7 @@ class CartItemCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('food')
+        cart_items = CartItem.objects.filter(user=request.user,checked_out=False).select_related('food')
         serializer = CartItemSerializer(cart_items, many=True)
         return Response({"data": serializer.data, "total": cart_items.count()}, status=status.HTTP_200_OK)
 
@@ -571,16 +571,19 @@ class PaymentAPIView(APIView):
         payments = Payment.objects.filter(user=request.user).all()
         serializer = PaymentSerializer(payments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
     def post(self, request):
         data = request.data
         items = data.get('order', [])
         amount = data.get('amount')
+        customer_name=data.get("customer_name")
+        customer_contact=data.get("customer_contact")
         payment_method = data.get('payment_method')
         restaurant_id = data.get('restaurant_id')
 
-        required_fields = [items, amount, payment_method, restaurant_id]
-        if any(field in [None, ''] for field in required_fields):
+        print("user 1",request.user)
+
+        if any(field in [None, ''] for field in [items, amount, payment_method, restaurant_id,customer_name]):
             return Response(
                 {"success": False, "error": "Missing required payment information."},
                 status=status.HTTP_400_BAD_REQUEST
@@ -593,72 +596,68 @@ class PaymentAPIView(APIView):
                 {"success": False, "error": "Restaurant not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        if not request.user or not request.user.is_authenticated:
-            return Response({"error": "Authentication required."}, status=401)
 
-        existing_payment = Payment.objects.filter(user=request.user, is_paid=True).first()
-        if existing_payment:
-            return Response({"message": "Payment already made."}, status=status.HTTP_400_BAD_REQUEST)
-
-        valid_methods = ['Cash', 'Credit Card', 'UPI', 'Wallet']
-        if payment_method not in valid_methods:
+        if payment_method not in ['Cash', 'Credit Card', 'UPI', 'Wallet']:
             return Response(
                 {"success": False, "error": "Invalid payment method."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
 
         try:
-            with transaction.atomic():
-                order = Order.objects.create(
-                    restaurant=restaurant,
-                    customer_name=request.user,
-                    status='Completed',
-                )
+            print("bc ky achal rah atahi")
+            order = Order.objects.create(
+                user=request.user,
+                restaurant=restaurant,
+                customer_name=customer_name,
+                customer_contact=customer_contact,
+            )
+            print("order",order)
 
-                for item in items:
-                    food_id = item.get('id')
-                    quantity = item.get('quantity')
+            for item in items:
+                food_id = item.get('id')
+                quantity = item.get('quantity')
 
-                    try:
-                        food = Food.objects.get(id=food_id)
-                    except Food.DoesNotExist:
-                        return Response(
-                            {"success": False, "error": f"Food item with id {food_id} not found."},
-                            status=status.HTTP_404_NOT_FOUND
-                        )
+                food = Food.objects.get(id=food_id)
+                if not food:
+                    return Response({"success": False, "error": f"Food item with id {food_id} not found."},status=status.HTTP_404_NOT_FOUND)
 
-                    OrderItem.objects.create(
-                        order=order,
-                        food=food,
-                        quantity=quantity
-                    )
+                OrderItem.objects.create(order=order,food=food,quantity=quantity)
 
-                payment = Payment.objects.create(
-                    user=request.user,
-                    order=order,
-                    amount=amount,
-                    payment_method=payment_method,
-                    is_paid=True
-                )
+            existing_payment = Payment.objects.filter(user=request.user, order=order, is_paid=True).first()
+            if existing_payment:
+                CartItem.objects.filter(user=request.user, order=order, checked_out=False).update(checked_out=True)
+                return Response({"success": True, "message": "Payment already made."}, status=status.HTTP_400_BAD_REQUEST)
 
-                CartItem.objects.filter(user=request.user, checked_out=False).update(checked_out=True)
+            print("exit payemtn",existing_payment)
+            payment = Payment.objects.create(
+                user=request.user,
+                order=order,
+                amount=amount,
+                payment_method=payment_method,
+                is_paid=True
+            )
+            print("user 2",request.user)
+            CartItem.objects.filter(user=request.user, checked_out=False).update(checked_out=True)
 
-                return Response(
-                    {
-                        "success": True,
-                        "order_id": order.id,
-                        "payment_id": payment.id,
-                        "is_paid": True,
-                        "message": "Order and payment processed successfully."
-                    },
-                    status=status.HTTP_201_CREATED
-                )
+            return Response(
+                {
+                    "success": True,
+                    "order_id": order.id,
+                    "payment_id": payment.id,
+                    "is_paid": True,
+                    "message": "Order and payment processed successfully."
+                },
+                status=status.HTTP_201_CREATED
+            )
 
         except Exception as e:
+            print("what the hell")
             return Response(
                 {"success": False, "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
 
 
 # Receipt API

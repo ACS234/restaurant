@@ -2,36 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { getFoods, addCart, searchItems } from '../services/apiServices';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { FaCartArrowDown } from "react-icons/fa";
+import { FaCartArrowDown, FaHeart } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { IoSearch } from "react-icons/io5";
 
 const FoodPage = () => {
-  const [foods, setFoods] = useState([])
+  const [foods, setFoods] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedFood, setSelectedFood] = useState([]);
   const navigate = useNavigate();
-  const [search, setSearch] = useState("")
-  const [filterData, setFilterData] = useState([])
+  const [search, setSearch] = useState("");
+  const [filterData, setFilterData] = useState([]);
 
   const handleSearch = (query) => {
     try {
       searchItems(query).then((res) => {
         if (res.data) {
-          setFilterData(res.data)
+          setFilterData(res.data);
         }
-      })
-
+      });
     } catch (error) {
-      console.error("error", error)
+      console.error("error", error);
     }
-  }
-  console.log("filterdata", filterData)
+  };
 
   useEffect(() => {
-    handleSearch(search)
-  }, [search])
-
+    handleSearch(search);
+  }, [search]);
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -63,6 +60,11 @@ const FoodPage = () => {
     setSelectedFood(foodItem);
     setShowModal(true);
   };
+
+  // const handleAddToFavorites = (foodId) => {
+  //   // Handle adding to favorites logic here
+  //   toast.success("Added to favorites!");
+  // };
 
   return (
     <div className="relative bg-[#4073a5d7] min-h-screen py-24 px-4 text-white">
@@ -103,31 +105,39 @@ const FoodPage = () => {
           {foods && filterData.map((menuItem) => (
             <div
               key={menuItem.id}
-              className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between"
+              className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between group"
             >
-              <button
-                onClick={() => handleShowDetails(menuItem)}
-                className="absolute top-2 right-2 text-white hover:text-gray-300"
-              >
-                <BsThreeDots size={20} color='yellow' />
-              </button>
+              <div className="relative">
+                <img
+                  src={`http://localhost:8000/${menuItem.image}`}
+                  alt={menuItem.name}
+                  className="w-full h-36 sm:h-44 md:h-48 object-cover rounded-md mb-3 transition-transform duration-300"
+                />
+                <div className="absolute top-36 inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <button
+                    onClick={() => handleAddToCart(menuItem.id)}
+                    className="absolute top-1 left-1 text-white bg-[#9b958c84] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <FaCartArrowDown color='yellow' size={20} />
+                  </button>
 
-              <img
-                src={`http://localhost:8000/${menuItem.image}`}
-                alt={menuItem.name}
-                className="w-full h-36 sm:h-44 md:h-48 object-cover rounded-md mb-3"
-              />
+                  <button
+                    onClick={() => handleShowDetails(menuItem)}
+                    className="absolute top-1 left-14 text-white bg-[#aea7a793] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <BsThreeDots color='black' size={20} />
+                  </button>
 
-              <img
-                src={`http://localhost:8000/${menuItem.image}`}
-                alt=""
-                id={`fly-img-${menuItem.id}`}
-                className="w-12 h-12 object-cover fixed z-[9999] hidden rounded-full"
-              />
+                  <button
+                    // onClick={() => handleAddToFavorites(menuItem.id)}
+                    className="absolute top-1 left-27 text-white bg-[#8e3a5698] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <FaHeart color='red' size={20} />
+                  </button>
+                </div>
+              </div>
 
-              <h3 className="font-semibold text-md truncate">
-                {menuItem.name} | {menuItem.restaurants[0]?.name}
-              </h3>
+              <h3 className="font-semibold text-md truncate">{menuItem.name} | {menuItem.restaurants[0]?.name}</h3>
 
               <div className="text-yellow-400 text-sm mb-1">
                 {"★".repeat(Math.round(menuItem.rating || 0)).padEnd(5, "☆")}
@@ -139,14 +149,6 @@ const FoodPage = () => {
                   ₹{menuItem.price}
                 </span>
               </p>
-
-              <button
-                onClick={() => handleAddToCart(menuItem.id)}
-                className="flex items-center justify-center gap-2 bg-[#ffb237] text-white font-semibold py-2 rounded-md transition-all duration-300"
-              >
-                <FaCartArrowDown />
-                Add to Cart
-              </button>
             </div>
           ))}
         </div>

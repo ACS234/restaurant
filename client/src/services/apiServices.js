@@ -3,7 +3,7 @@ import { ACCESS_TOKEN } from '../constants';
 import axiosInstance from './axiosInstance';
 import axios from 'axios';
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8010';
 
 const getData = async (url) => {
   try {
@@ -18,7 +18,7 @@ const getData = async (url) => {
 const postData = async (url, data) => {
   try {
     const response = await axiosInstance.post(url, data);
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Error posting data:', error);
     throw error;
@@ -188,11 +188,9 @@ export const bookTable = async (data) => {
 // Payment
 export const orderPayment = async (data) => {
   try {
-    const response=await postData(`/api/payments/`, data);
-    return response;
+    return await postData(`/api/payments/`, data);
   } catch (error) {
-    console.error('Payment error:', error);
-    toast.error(error.message);
+    throw error.response?.data || { message: 'Payment request failed' };
   }
 };
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { getUser } from '../services/apiServices';
 
 const useCurrentUser = () => {
-  const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -10,8 +9,7 @@ const useCurrentUser = () => {
     const fetchUser = async () => {
       try {
         const data = await getUser();
-        setUser(data.user_info);
-        setUserId(data.id);
+        setUser(data);
       } catch (error) {
         console.error('Failed to fetch user:', error);
       } finally {
@@ -22,8 +20,8 @@ const useCurrentUser = () => {
     fetchUser();
   }, []);
 
-  console.log("user",user)
-  return { user, userId, loading };
+  console.log("user id",user)
+  return { user, loading };
 };
 
 export default useCurrentUser;

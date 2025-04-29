@@ -51,7 +51,7 @@ const AddToCart = () => {
       setCartData((prevCart) => prevCart.filter((item) => item.id !== id));
       toast.success('Item removed successfully.');
     } catch (error) {
-      toast.error(`Failed to remove item with ID ${id}.`);
+      toast.error(`Failed to remove item.`);
       console.error(error);
     }
   };
@@ -65,100 +65,112 @@ const AddToCart = () => {
   };
 
   return (
-    <>
-      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-2 sm:p-6 flex justify-center">
-        <div className="w-full max-w-7xl flex flex-col md:flex-col gap-2 mt-10">
-          <div className="w-full md:w-2/3 bg-white rounded-md p-2 ml-32 sm:p-6">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-800 flex items-center gap-2">
-              <IoIosCart size={28} /> Your Cart ({cartData.length})
-            </h2>
-            {cartData.length > 0 ? (
-              <div className="space-y-6">
-                {cartData.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 border-b pb-4 overflow-x-auto px-2"
-                  >
+    <div className="flex flex-col items-center w-full min-h-screen bg-gray-50 px-4 py-8">
+      <div className="w-full md:w-2/3 bg-white rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center gap-2 mb-8">
+          <IoIosCart size={30} className="text-blue-600" />
+          <h2 className="text-3xl font-bold text-gray-800">Your Cart ({cartData.length})</h2>
+        </div>
+
+        {cartData.length > 0 ? (
+          <>
+            <div className="flex flex-col gap-6">
+              {cartData.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gray-100 rounded-xl hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
                     <img
                       src={`http://localhost:8000${item?.food?.image}`}
-                      alt={item.food.name}
-                      className="min-w-[80px] w-20 h-20 object-cover rounded-lg"
+                      alt={item?.food?.name}
+                      className="w-24 h-24 rounded-xl object-cover"
                     />
-
-                    <div className="min-w-[140px] flex-1">
-                      <h3 className="font-semibold text-gray-800 text-base">
-                        {item?.food?.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">Price: ₹{item?.food?.price}</p>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">{item?.food?.name}</h3>
+                      <p className="text-gray-500 text-sm">Price: ₹{item?.food?.price}</p>
                     </div>
+                  </div>
 
-                    <div className="min-w-[120px] flex items-center gap-2">
-                      <button
-                        onClick={() => handleQuantityChange(item.id, -1)}
-                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
-                        disabled={item.quantity <= 1}
-                      >
-                        <FiMinus />
-                      </button>
-                      <span className="font-medium px-2">{item?.quantity}</span>
-                      <button
-                        onClick={() => handleQuantityChange(item.id, 1)}
-                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
-                      >
-                        <FiPlus />
-                      </button>
-                    </div>
-
-                    <div className="min-w-[90px] text-right">
-                      <span className="text-xs text-gray-500 block">Total</span>
-                      <p className="text-green-600 font-semibold">
-                        ₹{item?.total_price}
-                      </p>
-                    </div>
-
+                  <div className="flex items-center gap-3">
                     <button
-                      onClick={() => removeCartItem(item.id)}
-                      className="flex justify-center cursor-pointer min-w-[40px] gap-4 items-center rounded-full size-10"
+                      onClick={() => handleQuantityChange(item.id, -1)}
+                      className="bg-white border border-gray-300 p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
+                      disabled={item.quantity <= 1}
                     >
-                      <FaTrash color="red" />
+                      <FiMinus />
+                    </button>
+                    <span className="text-lg font-medium">{item?.quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange(item.id, 1)}
+                      className="bg-white border border-gray-300 p-2 rounded-full hover:bg-gray-200"
+                    >
+                      <FiPlus />
                     </button>
                   </div>
-                ))}
-                <div className="flex justify-end text-2xl font-bold text-[#443c3c]">
-                  Total: ₹{totalAmount}
+
+                  <div className="text-right">
+                    <span className="text-sm text-gray-500 block">Total</span>
+                    <p className="text-green-600 font-bold text-lg">₹{item?.total_price}</p>
+                  </div>
+
+                  <button
+                    onClick={() => removeCartItem(item.id)}
+                    className="text-red-500 hover:text-red-700 transition"
+                  >
+                    <FaTrash size={18} />
+                  </button>
                 </div>
-                <div className="text-center text-gray-700">
-                <button
-                  onClick={handleGotoFood}
-                  className="inline-flex items-center gap-2 py-3 px-6 mt-4 rounded-xl font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                >
-                  <TbArrowBackUp size={20} />
-                  Add Items
-                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end mt-10">
+              <div className="text-right">
+                <h3 className="text-xl font-bold text-gray-800">Total Amount</h3>
+                <p className="text-2xl text-green-600 font-bold">₹{totalAmount}</p>
               </div>
-              </div>
-            ) : (
-              <div className="text-center text-gray-700 py-20">
-                <h3 className="text-xl font-semibold">Your Cart is Empty</h3>
-                <p>Add items to your cart to proceed with the order.</p>
-                <button
-                  onClick={handleMenu}
-                  className="inline-flex items-center gap-2 py-3 px-6 mt-4 rounded-xl font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                >
-                  <TbArrowBackUp size={20} />
-                  Explore Menu
-                </button>
-              </div>
-            )}
+            </div>
+
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleGotoFood}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 px-6 rounded-full text-lg font-medium shadow-md"
+              >
+                <TbArrowBackUp size={22} />
+                Add More Items
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png"
+              alt="Empty Cart"
+              className="w-40 h-40 mb-6 opacity-80"
+            />
+            <h3 className="text-2xl font-bold text-gray-700 mb-2">Your Cart is Empty</h3>
+            <p className="text-gray-500 mb-6 text-center">Looks like you haven't added anything yet.</p>
+            <button
+              onClick={handleMenu}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 px-6 rounded-full text-lg font-medium shadow-md"
+            >
+              <TbArrowBackUp size={22} />
+              Explore Menu
+            </button>
           </div>
-          <div className="w-full bg-amber-100 md:w-2/3 rounded-md p-2 ml-32 sm:p-6">
-            <PaymentPage cartData={cartData} totalAmount={totalAmount} />
-          </div>
-        </div>
-        <ToastContainer position="top-right" autoClose={3000} />
+        )}
       </div>
-    </>
+
+      {cartData.length > 0 && (
+        <div className="w-full md:w-2/3 mt-8 bg-amber-100 rounded-2xl p-6 shadow-lg">
+          <PaymentPage cartData={cartData} totalAmount={totalAmount} />
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
+    </div>
   );
 };
 
 export default AddToCart;
+
