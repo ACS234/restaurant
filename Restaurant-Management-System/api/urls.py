@@ -22,6 +22,7 @@ urlpatterns = [
     path('reviews/', ReviewAPIView.as_view(), name='review_list'),
     path('order/<int:restaurant_id>/<int:table_id>/', MenusAPIView.as_view(), name='menu_qr'),
     path('get_table/',TableAPIView.as_view(),name='table'),
+    path('get_table_qr/',TableQrAPIView.as_view(),name='table_qr'),
     path('get_table/<int:id>/',TableDetail.as_view(),name='get_table'),
     path('foods/search/',SearchFoodAPIView.as_view(),name='search_food'),
     path('foods/categories/',GetCategory.as_view(),name='categories'),

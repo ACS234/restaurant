@@ -3,7 +3,7 @@ import { ACCESS_TOKEN } from '../constants';
 import axiosInstance from './axiosInstance';
 import axios from 'axios';
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8010';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const getData = async (url) => {
   try {
@@ -194,6 +194,39 @@ export const orderPayment = async (data) => {
   }
 };
 
+
+export const orderFood = async (data) => {
+  try {
+    return await postData(`/api/manual-order/`, data);
+  } catch (error) {
+    throw error.response?.data || { message: 'Order failed' };
+  }
+};
+
+
+export const getOrders = async () => {
+  try {
+    const response = await getData(`/api/manual-order/`);
+    return response;
+  } catch (error) {
+    toast.error("Error Getting Orders");
+    throw error;
+  }
+};
+
+export const getReciept = async (orderId) => {
+  try {
+    const response = await getData(`/api/generate-receipt/${orderId}/`,{responseType: 'blob'});
+    console.log(response)
+    return response;
+  } catch (error) {
+    toast.error("Error Download Reciept");
+    throw error;
+  }
+};
+
+
+
 export const searchFoods = async (queryParams) => {
   try {
     const response = await getData(`/api/foods/search`, queryParams);
@@ -239,6 +272,17 @@ export const getRestaurants=async()=>{
 export const getQRCode = async () => {
   try {
     const response = await getData(`/api/restaurant/generate_qrcodes/`);
+    return response;
+  } catch (error) {
+    console.log("error", error);
+    throw error;
+  }
+};
+
+
+export const gettableQRCode = async () => {
+  try {
+    const response = await getData(`/api/get_table_qr/`);
     return response;
   } catch (error) {
     console.log("error", error);

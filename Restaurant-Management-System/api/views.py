@@ -193,6 +193,18 @@ class MenuDetailAPIView(APIView):
 
 
 # Table API
+
+class TableQrAPIView(APIView):
+    def get(self, request):
+        try:
+            tables = Table.objects.all()
+            serializer = TableQrSerializer(tables, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+
 class TableAPIView(APIView):
     def get(self, request):
         try:
@@ -833,6 +845,15 @@ class UpdateOrderStatusAPIView(APIView):
 
 class ManualOrderView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            orders = Order.objects.all()
+            serializer = OrderSerializer(orders, many=True)
+            return Response(serializer.data)
+        except Order.DoesNotExist:
+            return Response({"error": "Non order yet"}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def post(self, request):
         data = request.data

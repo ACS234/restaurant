@@ -68,7 +68,7 @@ const BookingSection = () => {
       <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white" />
       <input
         {...props}
-        className="w-full pl-10 p-3 bg-white/20 text-white placeholder-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+        className="w-full pl-10 p-3 bg-white border border-black text-black placeholder-black rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition"
       />
     </div>
   );
@@ -76,13 +76,13 @@ const BookingSection = () => {
   return (
     <section id='bookTable' className="relative w-full h-auto min-h-screen flex items-center justify-center px-4 py-20 text-white overflow-hidden">
       <div className="absolute inset-0 bg-cover bg-center filter blur-sm scale-105" />
-      <div className="absolute inset-0 bg-gray-600 bg-opacity-60" />
+      <div className="absolute inset-0 bg-white bg-opacity-60" />
       <div className="relative w-full max-w-3xl mx-auto z-10">
-        <h2 className="text-4xl font-bold mb-8 text-white text-center">Reserve a Table</h2>
+        <h2 className="text-4xl font-bold mb-8 text-black text-center">Reserve a Table</h2>
         <ToastContainer />
         <form
           onSubmit={handleSubmit}
-          className="grid gap-6 grid-cols-1 md:grid-cols-2 bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-xl"
+          className="grid gap-6 grid-cols-1 md:grid-cols-2 bg-white backdrop-blur-md border border-black bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 p-8 rounded-xl shadow-xl"
         >
           <InputWithIcon
             Icon={FaUser}
@@ -107,7 +107,7 @@ const BookingSection = () => {
               value={formData.table}
               onChange={handleChange}
               name="table"
-              className="w-full p-3 bg-white/20 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+              className="w-full p-3 border border-black bg-white text-black rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition"
               required
             >
               <option value="">Select a table</option>
@@ -154,7 +154,7 @@ const BookingSection = () => {
           <button
             type="submit"
             disabled={loading}
-            className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white py-3 rounded-md font-semibold transition"
+            className="col-span-3 items-center mx-auto w-1/3 md:col-span-2 border border-black bg-black hover:bg-green-500 disabled:opacity-50 text-white py-3 rounded-md font-semibold transition"
           >
             {loading ? 'Booking...' : 'Book Now'}
           </button>

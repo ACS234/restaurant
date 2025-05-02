@@ -61,21 +61,11 @@ const FoodPage = () => {
     setShowModal(true);
   };
 
-  // const handleAddToFavorites = (foodId) => {
-  //   // Handle adding to favorites logic here
-  //   toast.success("Added to favorites!");
-  // };
-
   return (
-    <div className="relative bg-[#4073a5d7] min-h-screen py-24 px-4 text-white">
+    <div className="relative bg-[#ffffff] min-h-screen py-24 px-4 text-black">
       <ToastContainer />
       <section className="relative z-10 max-w-7xl mx-auto text-center mb-20">
-        <p className="flex items-center hover:text-indigo-400 cursor-pointer">
-          <IoSearch
-            size={18}
-            onClick={handleSearch}
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-900"
-          />
+        <p className="relative flex items-center w-full">
           <input
             type="text"
             name="search"
@@ -83,69 +73,76 @@ const FoodPage = () => {
             onChange={(e) => setSearch(e.target.value)}
             id="search"
             placeholder="Search..."
-            className="w-1/2 rounded-md bg-gray-200 text-red-500"
+            className="w-full pl-8 pr-4 py-2 rounded-md bg-gray-400 text-gray-700"
+          />
+          <IoSearch
+            size={18}
+            onClick={handleSearch}
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-900 cursor-pointer"
           />
         </p>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-black drop-shadow-lg">
           Taste the Difference
         </h1>
-        <p className="mt-2 text-lg text-gray-200 max-w-xl mx-auto">
+        <p className="mt-2 text-lg text-gray-900 max-w-xl mx-auto">
           Discover handcrafted dishes made with love. Fast delivery. Fresh ingredients. Satisfaction guaranteed.
         </p>
         <button
           onClick={() => navigate('/menu')}
-          className="mt-6 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold rounded-lg shadow-lg transition-all"
+          className="mt-6 px-6 py-3 bg-green-600 text-black font-bold rounded-lg shadow-lg transition-all"
         >
           Explore Menu
         </button>
       </section>
 
-      <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {foods && filterData.map((menuItem) => (
             <div
               key={menuItem.id}
-              className="relative bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between group"
+              className="relative bg-[#ffffff] backdrop-blur-md p-4 border border-black rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 flex flex-col justify-between group"
             >
               <div className="relative">
                 <img
                   src={`http://localhost:8000/${menuItem.image}`}
                   alt={menuItem.name}
-                  className="w-full h-36 sm:h-44 md:h-48 object-cover rounded-md mb-3 transition-transform duration-300"
+                  className="w-full h-48 object-cover rounded-md mb-3 transition-transform duration-300"
+                  loading="lazy"
+                  decoding="async"
                 />
-                <div className="absolute top-36 inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute sm:top-0 top-44 inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                   <button
                     onClick={() => handleAddToCart(menuItem.id)}
-                    className="absolute top-1 left-1 text-white bg-[#9b958c84] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-1 left-1 text-white bg-[#ffffff] border border-black p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <FaCartArrowDown color='yellow' size={20} />
+                    <FaCartArrowDown color='black' size={20} />
                   </button>
 
                   <button
                     onClick={() => handleShowDetails(menuItem)}
-                    className="absolute top-1 left-14 text-white bg-[#aea7a793] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-1 left-14 text-white bg-[#ffffff] border border-black p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <BsThreeDots color='black' size={20} />
                   </button>
 
                   <button
-                    // onClick={() => handleAddToFavorites(menuItem.id)}
-                    className="absolute top-1 left-27 text-white bg-[#8e3a5698] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-1 left-27 text-white bg-[#fffffffe] p-2 border border-black rounded-full opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <FaHeart color='red' size={20} />
                   </button>
                 </div>
               </div>
 
-              <h3 className="font-semibold text-md truncate">{menuItem.name} | {menuItem.restaurants[0]?.name}</h3>
+              <h3 className="font-semibold text-md text-black truncate">{menuItem.name} | {menuItem.restaurants[0]?.name}</h3>
 
               <div className="text-yellow-400 text-sm mb-1">
                 {"★".repeat(Math.round(menuItem.rating || 0)).padEnd(5, "☆")}
-                <span className="text-gray-300 ml-1">({menuItem.rating ?? "0.0"})</span>
+                <span className="text-black ml-1">({menuItem.rating ?? "0.0"})</span>
               </div>
 
               <p className="mb-3">
-                <span className="inline-block bg-green-500 px-3 py-1 rounded-full text-sm text-white font-bold shadow">
+                <span className="inline-block bg-green-500 px-3 py-1 border border-black rounded-full text-sm text-white font-bold shadow">
                   ₹{menuItem.price}
                 </span>
               </p>
@@ -156,7 +153,7 @@ const FoodPage = () => {
 
       {showModal && selectedFood && (
         <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center px-4">
-          <div className="bg-[#FFB337] rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-2 right-2 text-gray-700 hover:text-black text-xl"
@@ -166,6 +163,8 @@ const FoodPage = () => {
             <img
               src={`http://localhost:8000/${selectedFood.image}`}
               alt={selectedFood.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-48 object-cover rounded-md mb-4"
             />
             <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedFood.name}</h2>
@@ -192,7 +191,7 @@ const FoodPage = () => {
                 handleAddToCart(selectedFood.id);
                 setShowModal(false);
               }}
-              className="w-full py-2 mt-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+              className="w-full py-2 mt-2 border border-black bg-yellow-400 text-white rounded hover:bg-yellow-500"
             >
               Add to Cart
             </button>

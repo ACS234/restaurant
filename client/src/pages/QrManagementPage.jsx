@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getTable } from '../services/apiServices';
+import { gettableQRCode } from '../services/apiServices';
 import { toast } from 'react-toastify';
 
 const QRManagementPage = () => {
@@ -7,7 +7,7 @@ const QRManagementPage = () => {
 
   const fetchTables = async () => {
     try {
-      const data = await getTable();
+      const data = await gettableQRCode();
       setQrCodes(data); 
     } catch (error) {
       console.error("Error fetching QR codes", error);

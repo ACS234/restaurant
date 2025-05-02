@@ -1,5 +1,5 @@
 import React from 'react';
-import img from '../assets/img_2.jpg';
+import img from '../assets/bg_img.jpg';
 import { FiArrowLeft } from "react-icons/fi";
 
 

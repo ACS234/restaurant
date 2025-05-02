@@ -76,6 +76,8 @@ const MenuDetail = () => {
             src={`http://localhost:8000${menuItem.image}`}
             alt={menuItem.title}
             className="w-full h-80 object-cover transition-transform duration-500 hover:scale-105"
+            loading="lazy"
+            decoding="async"
           />
         </div>
 

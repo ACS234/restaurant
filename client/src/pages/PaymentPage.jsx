@@ -89,12 +89,12 @@ const PaymentPage = ({ cartData, totalAmount }) => {
   const isDelivery = selectedMethod !== 'Cash';
 
   return (
-    <div className="w-full p-6 bg-gradient-to-br from-amber-50 to-white rounded-lg shadow-lg">
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-[#443c3c] mb-8">Secure Payment</h2>
+    <div className="w-full p-6 bg-white border border-black rounded-lg shadow-lg">
+      <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-black mb-8">Secure Payment</h2>
 
       <div className="flex flex-col gap-6">
-        <div className="text-center text-xl sm:text-2xl font-semibold text-[#6b4c3b]">
-          Total: <span className="text-[#db9742] font-bold">₹{totalAmount}</span>
+        <div className="text-center text-xl sm:text-2xl font-semibold text-black">
+          Total: <span className="text-black font-bold">₹{totalAmount}</span>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -104,7 +104,7 @@ const PaymentPage = ({ cartData, totalAmount }) => {
             value={formData.customerName}
             onChange={handleChange}
             placeholder="Full Name"
-            className="px-4 py-3 bg-[#fef9f6] border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
+            className="px-4 py-3 bg-white border border-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
           />
 
           <input
@@ -114,13 +114,13 @@ const PaymentPage = ({ cartData, totalAmount }) => {
             onChange={handleChange}
             placeholder="10-digit Contact Number"
             maxLength={10}
-            className="px-4 py-3 bg-[#fef9f6] border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
+            className="px-4 py-3 bg-white border border-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
           />
 
           <select
             value={selectedMethod}
             onChange={(e) => setSelectedMethod(e.target.value)}
-            className="px-4 py-3 bg-[#fef9f6] border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
+            className="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
           >
             <option value="Cash">Cash (Pay at Counter)</option>
             <option value="Credit Card">Credit Card</option>
@@ -135,19 +135,17 @@ const PaymentPage = ({ cartData, totalAmount }) => {
               onChange={handleChange}
               rows="3"
               placeholder="Delivery Address"
-              className="px-4 py-3 bg-[#fef9f6] border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#db9742]"
+              className="px-4 py-3 bg-white border border-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f4f2ef]"
             ></textarea>
           )}
         </div>
-
-        {/* Payment Button */}
         <button
           onClick={handlePayment}
           disabled={isProcessing}
-          className={`w-full py-4 mt-4 text-lg font-bold rounded-xl transition duration-300 ${
+          className={`w-full py-4 mt-4 text-lg font-bold border borde-black rounded-xl transition duration-300 ${
             isProcessing
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-[#db9742] to-[#b87b30] hover:from-[#ca8537] hover:to-[#a46324] text-white'
+              : 'bg-white hover:to-gray-300 text-white'
           }`}
         >
           {isProcessing ? 'Processing...' : `Pay ₹${totalAmount}`}

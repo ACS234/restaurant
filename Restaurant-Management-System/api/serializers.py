@@ -80,14 +80,19 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 class TableSerializer(serializers.ModelSerializer):
     restaurant=RestaurantSerializer()
-    # restaurant=serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all())
+    restaurant=serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all())
 
     class Meta:
         model=Table
         # fields= '__all__'
         fields= ['id','table_number','seats','restaurant','qr_code']
 
-    
+
+class TableQrSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Table
+        fields= ['id','table_number','qr_code']
+
 
 class QRCodeSerializer(serializers.ModelSerializer):
     qr_code_url = serializers.SerializerMethodField()

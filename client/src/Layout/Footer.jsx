@@ -32,7 +32,7 @@ const Footer = () => {
           </div>
           <div className="space-y-4">
             <h4 className="text-lg font-bold">Follow Us</h4>
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap space-x-4">
               <Link to="#" className="text-white ">
                 <FaFacebook color='blue' size={35}/>
               </Link>

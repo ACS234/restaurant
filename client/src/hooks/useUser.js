@@ -19,8 +19,6 @@ const useCurrentUser = () => {
 
     fetchUser();
   }, []);
-
-  console.log("user id",user)
   return { user, loading };
 };
 

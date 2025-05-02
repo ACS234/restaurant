@@ -74,17 +74,19 @@ const AddToCart = () => {
 
         {cartData.length > 0 ? (
           <>
-            <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {cartData.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gray-100 rounded-xl hover:shadow-md transition-all"
+                  className="flex flex-col bg-gray-100 rounded-xl hover:shadow-md transition-all"
                 >
-                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="flex items-center gap-4 p-4">
                     <img
                       src={`http://localhost:8000${item?.food?.image}`}
                       alt={item?.food?.name}
                       className="w-24 h-24 rounded-xl object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800">{item?.food?.name}</h3>
@@ -92,7 +94,7 @@ const AddToCart = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 p-4">
                     <button
                       onClick={() => handleQuantityChange(item.id, -1)}
                       className="bg-white border border-gray-300 p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
@@ -109,14 +111,14 @@ const AddToCart = () => {
                     </button>
                   </div>
 
-                  <div className="text-right">
+                  <div className="p-4 text-right">
                     <span className="text-sm text-gray-500 block">Total</span>
                     <p className="text-green-600 font-bold text-lg">₹{item?.total_price}</p>
                   </div>
 
                   <button
                     onClick={() => removeCartItem(item.id)}
-                    className="text-red-500 hover:text-red-700 transition"
+                    className="p-4 text-red-500 hover:text-red-700 transition"
                   >
                     <FaTrash size={18} />
                   </button>
@@ -173,4 +175,3 @@ const AddToCart = () => {
 };
 
 export default AddToCart;
-
