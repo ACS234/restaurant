@@ -129,7 +129,7 @@ const MenuSection = () => {
                               decoding="async"
                               className="w-full h-40 object-cover rounded-md mb-4"
                             />
-                            <div className="absolute top-16 left-0 w-full h-full flex justify-center items-center opacity-0 hover:opacity-100 transition-all duration-300 bg-black bg-opacity-40">
+                            <div className="absolute top-16 left-0 w-full h-full flex justify-center items-center opacity-0 hover:opacity-100 transition-all duration-300 bg-trasparent bg-opacity-40">
                               <button
                                 onClick={() => handleAddToCart(item.id)}
                                 className="bg-[#42424061] text-black p-2 rounded-full"
